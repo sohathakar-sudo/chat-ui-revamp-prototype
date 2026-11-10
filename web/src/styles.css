@@ -354,14 +354,17 @@ p { margin: 0; }
 /* ---------- B orb: two drifting circles (Figma 570:11805 assets, motion per reviewer brief) ----------
    Circles keep their size; they orbit slowly in opposite directions. Colours: #FEED9F yellow, #BEF5F1 blue. */
 @property --duo-c { syntax: '<color>'; inherits: false; initial-value: #feed9f; }
-.duo { position: absolute; inset: 0; display: block; --duo-size: 78%; --duo-r: 4.5%; }
+.duo { position: absolute; inset: 0; display: block; --duo-a-size: 72%; --duo-b-size: 82%; }
+/* Two circles of different sizes, both centred on the orb: the larger (blue, --duo-b) sits behind,
+   the smaller (yellow, --duo-a) in front — the layered, two-lobe shape from Figma 570:11805. */
 .duo i {
-  position: absolute; left: 50%; top: 50%; width: var(--duo-size); aspect-ratio: 1; margin: calc(var(--duo-size) / -2) 0 0 calc(var(--duo-size) / -2);
+  position: absolute; left: 50%; top: 50%; width: var(--s); aspect-ratio: 1; margin: calc(var(--s) / -2) 0 0 calc(var(--s) / -2);
   border-radius: 50%; filter: blur(5px);
   background: linear-gradient(var(--duo-ang, 195deg), rgba(255, 248, 238, 0.6) 0%, #fff 14%, var(--duo-c) 80%);
   animation: duo-cw 22s linear infinite;
 }
-.duo .duo-b { animation-name: duo-ccw; animation-duration: 26s; opacity: 0.7; --duo-ang: 15deg; }
+.duo .duo-a { --s: var(--duo-a-size); }
+.duo .duo-b { --s: var(--duo-b-size); animation-name: duo-ccw; animation-duration: 26s; opacity: 0.7; --duo-ang: 15deg; }
 .duo-cycle .duo-a { animation: duo-cw 22s linear infinite, duo-tint 32s ease-in-out infinite; }
 .duo-cycle .duo-b { animation: duo-ccw 26s linear infinite, duo-tint 32s ease-in-out -8s infinite; }
 .duo-listen i { --duo-c: #bef5f1; background: linear-gradient(var(--duo-ang, 195deg), #ddf6f8 0%, #fff 14%, var(--duo-c) 62.5%); }
@@ -374,9 +377,9 @@ p { margin: 0; }
 @keyframes duo-ccw { from { transform: rotate(180deg) translateX(var(--duo-r-px, 4px)) rotate(-180deg); } to { transform: rotate(-180deg) translateX(var(--duo-r-px, 4px)) rotate(180deg); } }
 /* Offset by a quarter cycle: both yellow → one blue (mix) → both blue → one yellow (mix) → … */
 @keyframes duo-tint { 0%, 25%, 100% { --duo-c: #feed9f; } 50%, 75% { --duo-c: #bef5f1; } }
-.hb-orb .duo { --duo-size: 73%; --duo-r-px: 5px; }
-.vb-landing-orb .duo { --duo-size: 79%; --duo-r-px: 7px; }
-.vb-orb .duo { --duo-size: 80%; --duo-r-px: 4px; }
+.hb-orb .duo { --duo-a-size: 76%; --duo-b-size: 86%; --duo-r-px: 4px; }
+.vb-landing-orb .duo { --duo-a-size: 74%; --duo-b-size: 84%; --duo-r-px: 5px; }
+.vb-orb .duo { --duo-a-size: 78%; --duo-b-size: 88%; --duo-r-px: 3px; }
 
 /* ---------- Home B (531:9413) ---------- */
 .home-b { background: var(--b-bg); }
