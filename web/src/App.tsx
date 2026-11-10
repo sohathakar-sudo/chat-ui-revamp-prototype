@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useStore } from './lib/store';
-import { Loader } from './screens/Loader';
+import { Loader, LoaderOverlay } from './screens/Loader';
 import { Home } from './screens/Home';
 import { Chat } from './screens/Chat';
 import { Voice } from './screens/Voice';
@@ -14,6 +14,15 @@ export function App() {
   const swoosh = trans?.swoosh && trans.stage !== 'press' ? trans.swoosh : null;
   // Variant A Chat → Voice: the Speak pill's glow blooms into a full-screen gradient across the swap.
   const bloom = trans?.variant === 'A' && trans.kind === 'chat-voice' && trans.stage !== 'press' ? trans.stage : null;
+
+  // Loader → Chat: keep the loader art on top of Chat and fade it out (crossfade, no blank frame).
+  const prev = useRef(screen);
+  const [overlay, setOverlay] = useState(false);
+  useEffect(() => {
+    if (prev.current === 'loader' && screen === 'chat') setOverlay(true);
+    prev.current = screen;
+  }, [screen]);
+  const overlayDone = useCallback(() => setOverlay(false), []);
 
   // Scale the 412×917 phone frame to fit shorter desktop windows.
   useEffect(() => {
@@ -38,6 +47,7 @@ export function App() {
             {screen === 'voice' && <Voice />}
             {screen === 'voices' && <ChooseVoice />}
           </div>
+          {overlay && <LoaderOverlay onDone={overlayDone} />}
           {bloom && <div className={`bloom ${bloom}`} aria-hidden />}
           {swoosh && (
             <div className={`swoosh ${swoosh}`} key={trans!.kind} style={{ ['--swoosh-ms' as string]: `${SWOOSH_MS}ms` }} aria-hidden>
