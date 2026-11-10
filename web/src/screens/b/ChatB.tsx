@@ -1,41 +1,13 @@
 // Variant B chat thread (Figma 531:8808 Chat/Active, 531:8779 Chat/Typing).
-import { useEffect, useState } from 'react';
-import { store, type Message } from '../../lib/store';
+import type { Message } from '../../lib/store';
 import type { ChatModel } from '../../lib/useChat';
+import { useTypeIn } from '../../lib/useTypeIn';
 import { StatusBar } from '../../components/StatusBar';
 import { Recorder } from '../../components/Recorder';
 
-// Home → Chat: once the bars are in, Wysa's latest message types in, then "Read aloud" pops in.
-const TYPE_START_MS = 520;
-const TYPE_CHAR_MS = 28;
-
-function useTypeIn(messages: Message[]) {
-  const [state] = useState(() => {
-    const t = store.get().trans;
-    if (!(t?.kind === 'home-chat' && t.stage === 'enter')) return null;
-    const last = [...messages].reverse().find((m) => m.role === 'assistant' && m.status === 'done');
-    return last ? { id: last.id, len: last.text.length } : null;
-  });
-  const [shown, setShown] = useState(state ? 0 : Infinity);
-  useEffect(() => {
-    if (!state) return;
-    let n = 0;
-    let iv = 0;
-    const start = window.setTimeout(() => {
-      iv = window.setInterval(() => {
-        n += 1;
-        setShown(n);
-        if (n >= state.len) { window.clearInterval(iv); setShown(Infinity); }
-      }, TYPE_CHAR_MS);
-    }, TYPE_START_MS);
-    return () => { window.clearTimeout(start); window.clearInterval(iv); };
-  }, [state]);
-  return { typingId: shown === Infinity ? null : state?.id ?? null, shown, typedId: state?.id ?? null };
-}
-
 export function ChatB({ c }: { c: ChatModel }) {
   const typing = c.hasText && !c.recording;
-  const typeIn = useTypeIn(c.messages);
+  const typeIn = useTypeIn(c.messages, 520);
   return (
     <div className={`scr chat chat-b${typing ? ' is-typing' : ''}`}>
       <img className="cb-glow-cool" src="/assets/b/chat-glow-cool.svg" alt="" />

@@ -244,6 +244,10 @@ p { margin: 0; }
 .rec-time { width: 45px; font-size: 16px; line-height: 20px; color: #000; font-variant-numeric: tabular-nums; }
 .rec-wave { width: 200px; height: 24px; flex-shrink: 1; min-width: 0; overflow: hidden; }
 .rec-ok { width: 32px; height: 32px; border-radius: 100px; background: var(--teal); display: flex; align-items: center; justify-content: center; }
+.rec-ok:disabled { opacity: 0.5; cursor: default; }
+/* Transcribing after the tick (no Figma frame: spinner in the waveform's place; design review) */
+.rec-busy { width: 200px; height: 24px; display: flex; align-items: center; justify-content: center; }
+.rec-busy .spin { animation: spin 0.9s linear infinite; }
 
 /* ---------- voice mode ---------- */
 .voice-body { position: absolute; top: 47px; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; padding: 24px 24px 17px; }
@@ -290,6 +294,9 @@ p { margin: 0; }
 .listen-ring { position: absolute; inset: -5.33%; width: 110.66%; height: 110.66%; }
 .bars.listen { left: 0; top: 0; }
 .bars.listen i { transition: transform 90ms linear; }
+/* Placeholder orb motion while the user or Wysa is talking: a gentle grow-and-shrink (final orb animation TBD) */
+.orb.talking { animation: orb-talk 1.3s ease-in-out infinite alternate; }
+@keyframes orb-talk { from { transform: scale(0.94); } to { transform: scale(1.05); } }
 
 .v-text { display: flex; flex-direction: column; align-items: center; gap: 36px; padding: 24px 0; text-align: center; min-height: 0; }
 .caption { display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 16px; line-height: 20px; color: var(--muted); min-height: 24px; }
@@ -636,3 +643,88 @@ p { margin: 0; }
 @media (prefers-reduced-motion: reduce) {
   .swoosh, .tr-exit *, .tr-enter * { animation-duration: 1ms !important; animation-delay: 0ms !important; }
 }
+
+/* ======================================================================
+   Variant A screen transitions (timings in web/src/lib/transitions.ts)
+   Top bars swap sideways: the old left item leaves to the left and the new one
+   slides in from the right into the same place; the right side mirrors it.
+   ====================================================================== */
+@keyframes tb-out-l { to { opacity: 0; translate: -48px 0; } }
+@keyframes tb-out-r { to { opacity: 0; translate: 48px 0; } }
+@keyframes tb-in-l { from { opacity: 0; translate: 48px 0; } }
+@keyframes tb-in-r { from { opacity: 0; translate: -48px 0; } }
+@keyframes a-sink { to { translate: 0 110%; } }
+@keyframes a-rise { from { translate: 0 110%; } }
+@keyframes a-hero-expand { to { height: 100%; border-radius: 0; } }
+@keyframes a-hero-settle { from { height: 100%; border-radius: 0; } }
+.tr-A.tr-exit .tb-l { animation: tb-out-l 250ms var(--ease-in) forwards; }
+.tr-A.tr-exit .tb-r { animation: tb-out-r 250ms var(--ease-in) forwards; }
+.tr-A.tr-enter .tb-l { animation: tb-in-l 350ms var(--ease-out) both; }
+.tr-A.tr-enter .tb-r { animation: tb-in-r 350ms var(--ease-out) both; }
+.type-caret.a { background: var(--ink); }
+.speaker.fade-in { animation: fade-in 400ms ease both; }
+
+/* Home → Chat / Home → Voice (exit): the hero expands to fill the screen, the orb shrinks away,
+   the copy and pills fade, and "For your day" and the bottom nav slide down. */
+.tr-A.tr-exit.tr-home-chat .hero, .tr-A.tr-exit.tr-home-voice .hero { animation: a-hero-expand 550ms var(--ease-out) forwards; }
+.tr-A.tr-exit.tr-home-chat .home-orb, .tr-A.tr-exit.tr-home-voice .home-orb { animation: orb-out 300ms var(--ease-in) forwards; }
+.tr-A.tr-exit.tr-home-chat .hero-copy, .tr-A.tr-exit.tr-home-voice .hero-copy { animation: fade-out 250ms ease forwards; }
+.tr-A.tr-exit.tr-home-chat .today, .tr-A.tr-exit.tr-home-voice .today,
+.tr-A.tr-exit.tr-home-chat .bottom-nav, .tr-A.tr-exit.tr-home-voice .bottom-nav { animation: a-sink 450ms var(--ease-in) forwards; }
+
+/* Home → Chat (enter): bars swap in, the input box rises, then the greeting types in
+   and its speaker fades in (ChatA.tsx). Earlier messages fade in. */
+.tr-A.tr-enter.tr-home-chat .chat-glow { animation: fade-in 500ms ease both; }
+.tr-A.tr-enter.tr-home-chat .composer { animation: a-rise 450ms var(--ease-out) 200ms both; }
+.tr-A.tr-enter.tr-home-chat .tr-fade { animation: fade-in 400ms ease 650ms both; }
+
+/* Chat → Home (exit): the input box drops, the messages disappear, then the bars swap out. */
+.tr-A.tr-exit.tr-chat-home .composer, .tr-A.tr-exit.tr-chat-home .recorder { animation: a-sink 300ms var(--ease-in) forwards; }
+.tr-A.tr-exit.tr-chat-home .thread, .tr-A.tr-exit.tr-chat-home .notice, .tr-A.tr-exit.tr-chat-home .offline { animation: fade-out 250ms ease 200ms forwards; }
+.tr-A.tr-exit.tr-chat-home .chat-glow { animation: fade-out 300ms ease 300ms forwards; }
+.tr-A.tr-exit.tr-chat-home .tb-l { animation: tb-out-l 250ms var(--ease-in) 380ms forwards; }
+.tr-A.tr-exit.tr-chat-home .tb-r { animation: tb-out-r 250ms var(--ease-in) 380ms forwards; }
+/* Chat → Home (enter): the full screen settles back into the hero container (the feed rides up
+   under it), Home's bars swap in, the bottom nav slides up and the orb pops back. */
+.tr-A.tr-enter.tr-chat-home .hero { animation: a-hero-settle 600ms var(--ease-out) both; }
+.tr-A.tr-enter.tr-chat-home .tb-l, .tr-A.tr-enter.tr-chat-home .tb-r { animation-delay: 150ms; }
+.tr-A.tr-enter.tr-chat-home .bottom-nav { animation: a-rise 450ms var(--ease-out) 250ms both; }
+.tr-A.tr-enter.tr-chat-home .home-orb { animation: orb-settle 500ms var(--overshoot) 450ms both; }
+.tr-A.tr-enter.tr-chat-home .hero-copy { animation: fade-in 400ms ease 500ms both; }
+
+/* Chat → Voice (press): a blue glow traces around the Speak pill... */
+@property --sweep { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+.speak-pill .trace {
+  position: absolute; inset: -3px; border-radius: 140px; padding: 3px; pointer-events: none;
+  background: conic-gradient(from 270deg, var(--teal) var(--sweep), transparent var(--sweep));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  filter: blur(1.5px); animation: trace 480ms var(--ease-in) forwards;
+}
+.speak-pill.tracing { box-shadow: 0 0 14px rgba(73, 153, 165, 0.55); transition: box-shadow 300ms ease 300ms; }
+@keyframes trace { to { --sweep: 360deg; } }
+/* ...then blooms from the pill into a full-screen blue-to-cream gradient that covers the swap (App.tsx). */
+.bloom {
+  position: absolute; left: 78px; bottom: 59px; width: 80px; height: 80px; margin: 0 0 -40px -40px;
+  border-radius: 50%; z-index: 40; pointer-events: none;
+  background: radial-gradient(circle, var(--teal-soft) 0%, var(--cyan-50) 40%, var(--bg) 68%);
+}
+.bloom.exit { animation: bloom-grow 500ms cubic-bezier(0.5, 0, 0.3, 1) forwards; }
+.bloom.enter { transform: scale(30); animation: fade-out 600ms ease 100ms forwards; }
+@keyframes bloom-grow { from { transform: scale(0.5); opacity: 0.6; } to { transform: scale(30); opacity: 1; } }
+.tr-A.tr-exit.tr-chat-voice .composer { animation: a-sink 300ms var(--ease-in) forwards; }
+.tr-A.tr-exit.tr-chat-voice .thread { animation: fade-out 250ms ease forwards; }
+
+/* Voice entering (from Home or Chat): bars swap in, Type/Mute rise, the orb plays its own
+   entrance (idle-glow / idle-core), and "Tap anywhere to start" blurs in. */
+.tr-A.tr-enter.tr-chat-voice .tb-l, .tr-A.tr-enter.tr-chat-voice .tb-r { animation-delay: 150ms; }
+.tr-A.tr-enter.tr-home-voice .v-ctrls, .tr-A.tr-enter.tr-chat-voice .v-ctrls { animation: a-rise 450ms var(--ease-out) 200ms both; }
+.tr-A.tr-enter.tr-home-voice .caption, .tr-A.tr-enter.tr-chat-voice .caption { animation: blur-in 700ms ease-out 650ms both; }
+
+/* Voice → Chat (X or Type): bars swap, the orb shrinks away, the text fades and the controls drop;
+   then Chat's bars swap in, the input rises and the thread (with the voice transcript) fades in. */
+.tr-A.tr-exit.tr-voice-chat .orb-wrap { animation: orb-out 350ms var(--ease-in) forwards; }
+.tr-A.tr-exit.tr-voice-chat .v-text { animation: fade-out 250ms ease forwards; }
+.tr-A.tr-exit.tr-voice-chat .v-ctrls { animation: a-sink 300ms var(--ease-in) forwards; }
+.tr-A.tr-enter.tr-voice-chat .composer { animation: a-rise 400ms var(--ease-out) 100ms both; }
+.tr-A.tr-enter.tr-voice-chat .thread { animation: fade-in 450ms ease 150ms both; }

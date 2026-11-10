@@ -21,10 +21,11 @@ export function VoiceA({ v }: { v: VoiceModel }) {
       <StatusBar />
       <div className="voice-body">
         <div className="v-head">
-          <button className="v-x" onClick={(e) => { e.stopPropagation(); leave('home'); }} aria-label="End session">
+          {/* X ends the session and shows its transcript in Chat; Chat's back arrow then goes Home. */}
+          <button className="v-x tb-l" onClick={(e) => { e.stopPropagation(); leave('chat'); }} aria-label="End session">
             <img src="/assets/close.svg" width={20} height={20} alt="" />
           </button>
-          <button className="v-gear" onClick={(e) => { e.stopPropagation(); leave('voices'); }} aria-label="Choose a voice">
+          <button className="v-gear tb-r" onClick={(e) => { e.stopPropagation(); leave('voices'); }} aria-label="Choose a voice">
             <img src="/assets/gear.svg" width={24} height={24} alt="" />
           </button>
         </div>
@@ -51,20 +52,19 @@ export function VoiceA({ v }: { v: VoiceModel }) {
           </div>
         </div>
 
-        {phase !== 'idle' && (
-          <div className="v-ctrls" onClick={(e) => e.stopPropagation()}>
-            <button className="v-btn" onClick={() => leave('chat')} aria-label="Type">
-              <span className="c aa">Aa</span>
-              <span className="l">Type</span>
-            </button>
-            <button className="v-btn" onClick={toggleMute} aria-label={phase === 'paused' ? 'Unmute' : 'Mute'} aria-pressed={phase === 'paused'}>
-              <span className={`c${phase === 'paused' ? ' active' : phase === 'speaking' ? ' dim' : ''}`}>
-                <img src="/assets/mic-slash.svg" width={24} height={24} alt="" />
-              </span>
-              <span className="l">Mute</span>
-            </button>
-          </div>
-        )}
+        {/* Ready shows Type and Mute too (Voice/Landing 523:6686). */}
+        <div className="v-ctrls" onClick={(e) => e.stopPropagation()}>
+          <button className="v-btn" onClick={() => leave('chat')} aria-label="Type">
+            <span className="c aa">Aa</span>
+            <span className="l">Type</span>
+          </button>
+          <button className="v-btn" onClick={toggleMute} aria-label={phase === 'paused' ? 'Unmute' : 'Mute'} aria-pressed={phase === 'paused'}>
+            <span className={`c${phase === 'paused' ? ' active' : phase === 'speaking' ? ' dim' : ''}`}>
+              <img src="/assets/mic-slash.svg" width={24} height={24} alt="" />
+            </span>
+            <span className="l">Mute</span>
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -81,7 +81,7 @@ function Orb({ phase, barEls }: { phase: Phase; barEls: MutableRefObject<(HTMLEl
   }
   if (phase === 'speaking') {
     return (
-      <div className="orb">
+      <div className="orb talking">
         <div className="glow speak"><img src="/assets/speak-glow.svg" alt="" /></div>
         <div className="speak-ring"><img src="/assets/speak-ring.svg" alt="" /></div>
         <div className="bars speak on">
@@ -92,7 +92,7 @@ function Orb({ phase, barEls }: { phase: Phase; barEls: MutableRefObject<(HTMLEl
   }
   if (phase === 'listening' || phase === 'thinking') {
     return (
-      <div className="orb">
+      <div className={`orb${phase === 'listening' ? ' talking' : ''}`}>
         <div className={`glow listen${phase === 'thinking' ? ' pulse' : ''}`}><img src="/assets/listen-glow.svg" alt="" /></div>
         <img className="listen-ring" src="/assets/listen-ring.svg" alt="" />
         <div className="bars listen">

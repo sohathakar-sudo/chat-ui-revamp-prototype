@@ -73,7 +73,7 @@ export function useChat() {
       send(text);
       setText('');
     },
-    /** Voice-note recorder (A: mic button, B: Speak pill). */
+    /** Dictation recorder (Variant A mic button). */
     openRecorder(tip: VoiceTip) {
       if (!online) return;
       if (!voiceSupported()) { setVoiceTip(tip); return; }
@@ -90,18 +90,21 @@ export function useChat() {
       store.enterVoice();
     },
     recorderDenied() { setRecording(false); setNotice(MIC_DENIED); },
+    /** Dictation lands in the input like typed text; the user edits or sends it. */
     recorderDone(t: string | null) {
       setRecording(false);
       if (t === null) return;
       if (!t) { setNotice("Couldn't catch that, try again."); return; }
-      send(t);
+      setText((prev) => (prev.trim() ? `${prev.replace(/\s+$/, '')} ${t}` : t));
+      requestAnimationFrame(() => {
+        const el = inputRef.current;
+        if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+      });
     },
     toggleHeaderTip() { setHeaderTip((v) => !v); },
     back() {
       stopMessagePlayback();
-      // Variant A plays the loader-to-home transition; Variant B swooshes (transitions.ts).
-      if (store.get().variant === 'B') store.go('home');
-      else store.set({ screen: 'home', homeTransition: true });
+      store.go('home'); // animated per variant (transitions.ts)
     },
     retry(id: string) { if (!isReplying() && store.get().online) retryReply(id); },
     togglePlayback: toggleMessagePlayback,

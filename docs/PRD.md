@@ -58,12 +58,12 @@ Build one working, clickable prototype of the revamped Wysa chat experience as a
 Labels and entry points differ by variant (A / B) where noted.
 
 - App launch → Loader → Chat thread.
-- Chat thread back arrow → Home, played with the loader-to-home transition.
+- Chat thread back arrow → Home, animated per variant (section 15).
 - Home → Chat → Chat thread.
 - Home → Speak or tap on the orb → Voice mode.
 - Chat thread composer Speak pill → Voice mode (both variants; Variant B opens straight into Listening, like entering from Home).
 - Voice mode Type → Chat thread.
-- Voice mode X → Home (A) / Chat thread (B). In B the Chat thread shows the whole voice conversation, and its back arrow then goes Home.
+- Voice mode X and Type → Chat thread (both variants). The Chat thread shows the whole voice conversation, and its back arrow then goes Home.
 - Voice mode gear (A) / Wysa's Voice pill (B) → Choose a Voice → Voice mode (Ready).
 
 ### 4. Loader
@@ -109,7 +109,7 @@ Labels and entry points differ by variant (A / B) where noted.
 - **Wysa Speaking:** the reply is spoken in the selected voice and its text is revealed in sync: already-spoken words in dark text, upcoming words faded. When speech ends, the mic reopens automatically → Listening.
 - **Paused:** entered via Mute (A) / Pause (B). Speech output and mic both stop and the orb is static. The control shows an active/toggled state. Tapping it again resumes → Listening. In Variant B, Pause also works from Ready (it cancels a mic that is still opening).
 - **Reconnecting:** error state. The app retries in the background and on success returns to the state it was in.
-- Controls: X and the voice settings entry are always shown. Type and Mute (A) / Pause (B) are shown in every state except Variant A's Ready.
+- Controls: X and the voice settings entry are always shown. Type and Mute (A) / Pause (B) are shown in every state, Ready included.
 - Every completed user turn and Wysa reply is added to the shared conversation in real time.
 - **Caption slot rule:** the caption by the orb is the single place for every status and indicator on the voice screen: Listening, Thinking…, Wysa Speaking, Paused, Reconnecting, and all error or warning messages. No banners, toasts or inline messages elsewhere on the voice screen. Normal states use the variant's default caption style. Errors and warnings use the error color (coral red, `#D26969`), with a small spinning ring before the text only while a retry is in progress.
 
@@ -162,10 +162,10 @@ Labels and entry points differ by variant (A / B) where noted.
   - Composer, empty (`535:10388`):
     - a white rounded card (28px radius) with the input on top; placeholder "Write, or tap the mic to dictate" (Google Sans Flex)
     - below the input: a white "Speak" pill with a waveform icon (left) that opens voice mode
-    - a teal circular mic button (right) that opens the voice-note recorder
+    - a teal circular mic button (right): hold to dictate (section 7)
   - Composer, typing (`535:10486`): the card grows with the typed text, the Speak pill stays, and the mic is replaced by a teal circular send button.
   - Soft gradient fade above the composer.
-  - Recorder (`535:10429`): red bin (left), timer, waveform, teal circular check (right).
+  - Recorder (`535:10429`): red bin (left), timer, live waveform, teal circular check (right). Press the mic to start, press the check to stop and transcribe. While transcribing, a spinner replaces the waveform (no Figma frame — flagged for design review). The transcript lands in the composer as editable text, as if typed (`535:10486`); the user edits or sends it. The bin discards and returns to the empty composer.
 - **Voice mode:**
   - Header: X (top-left), gear (top-right).
   - Ready (`523:6686`):
@@ -302,14 +302,15 @@ Timings live in one place (`web/src/lib/transitions.ts`). Durations not given be
 Decided:
 
 1. **The chat Speak pill opens full voice mode in both variants** (confirmed by product, 10 Nov 2026). In Variant A the mic records voice notes; Variant B has no voice-note entry in chat. "Entering full voice mode from the Chat thread" is no longer out of scope.
-2. **Variant A Ready hides Type/Mute** although the Voice/Landing frame shows them. The behavior rule wins.
+2. **Variant A Ready shows Type and Mute** (Voice/Landing `523:6686`), updated 10 Nov 2026. Both controls are present in every voice state.
 3. **Variant A Reconnecting** uses the Figma frame's plain ring. Earlier drafts described four static dots. It shows no message text, although the frame shows a transcript line.
 4. **Variant A Ready orb entry animation** ends at the static frame's size. The Figma motion data scales the core to 2×, which doesn't match the frame.
 
 Open:
 
 1. **Loader code layer** (`269-1307`): the source must be exported by design before it can be reused (section 1). Until then the loader is an approximation.
-2. **Transition references:** Variant B transitions are built from the product owner's written spec (section 15). The swoosh code layer (`280-1400`) still needs its source exported to match it exactly. Variant A transitions are pending.
+2. **Transition references:** Variant A and B transitions are built from the product owner's written spec (section 15). Variant A: Home↔Chat (hero expand/settle, sideways top-bar swap, input rise, greeting types in), Home→Voice, Chat→Voice (Speak-pill glow blooms into a full-screen gradient) and Voice→Chat (transcript kept). The swoosh code layer (`280-1400`) still needs its source exported to match B exactly.
+3. **Voice orb while talking (Variant A):** a placeholder grow-and-shrink pulse during Listening and Wysa Speaking. The final orb animation is still to be chosen.
 3. **No-frame states needing design review:**
    - Shared: typing indicator, "Something went wrong · Retry", "You're offline" banner, header tooltips, message playing state, inline mic-denied and "Couldn't catch that" messages.
    - Variant A: Thinking and Paused orbs, Mute active state.

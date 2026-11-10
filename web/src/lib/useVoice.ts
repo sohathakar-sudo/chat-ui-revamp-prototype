@@ -320,9 +320,8 @@ export function useVoice(variant: Variant) {
       return;
     }
     if (p === 'idle') {
-      // Variant A hides Mute in Ready. Variant B shows Pause there (Voice/Landing):
-      // it cancels a mic that is still opening and holds the screen in Paused.
-      if (variant !== 'B') return;
+      // Mute (A) / Pause (B) in Ready (Voice/Landing): cancels a mic that is still
+      // opening and holds the screen in Paused.
       stopListening();
       setIdleReason('initial');
       setPhase('paused');

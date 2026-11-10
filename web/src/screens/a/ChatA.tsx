@@ -1,17 +1,25 @@
-import type { Message } from '../../lib/store';
+import { useStore, type Message } from '../../lib/store';
 import type { ChatModel } from '../../lib/useChat';
+import { useTypeIn } from '../../lib/useTypeIn';
 import { StatusBar } from '../../components/StatusBar';
 import { BackIcon } from '../../components/Icons';
 import { Recorder } from '../../components/Recorder';
 
+// Home → Chat: the greeting starts typing once the hero has expanded and both bars are in.
+const TYPE_START_MS = 650;
+
 export function ChatA({ c }: { c: ChatModel }) {
+  const typeIn = useTypeIn(c.messages, TYPE_START_MS);
+  const trans = useStore((s) => s.trans);
+  // Chat → Voice: the Speak pill's blue glow traces around it before the bloom.
+  const tracing = trans?.kind === 'chat-voice' && trans.stage === 'press';
   return (
     <div className="scr chat">
       <img className="chat-glow" src="/assets/chat-glow.svg" alt="" />
       <StatusBar />
       <div className="chat-head">
-        <button onClick={c.back} aria-label="Back"><BackIcon /></button>
-        <div className="progress-wrap">
+        <button className="tb-l" onClick={c.back} aria-label="Back"><BackIcon /></button>
+        <div className="progress-wrap tb-r">
           <button className="icon24" onClick={c.toggleHeaderTip} aria-label="Progress">
             <img src="/assets/progress-icon.svg" width={24} height={24} alt="" />
           </button>
@@ -22,7 +30,14 @@ export function ChatA({ c }: { c: ChatModel }) {
 
       <div className="thread" ref={c.threadRef}>
         {c.messages.map((m) => (
-          <MessageRow key={m.id} m={m} c={c} />
+          <MessageRow
+            key={m.id}
+            m={m}
+            c={c}
+            typed={m.id === typeIn.typingId ? m.text.slice(0, typeIn.shown) : undefined}
+            fadeSpeaker={m.id === typeIn.typedId}
+            enterFade={!!typeIn.typedId && m.id !== typeIn.typedId}
+          />
         ))}
       </div>
 
@@ -49,7 +64,8 @@ export function ChatA({ c }: { c: ChatModel }) {
               />
             </label>
             <div className="row">
-              <button className="speak-pill" onClick={c.openVoiceMode} disabled={!c.online} aria-label="Speak with Wysa">
+              <button className={`speak-pill${tracing ? ' tracing' : ''}`} onClick={c.openVoiceMode} disabled={!c.online} aria-label="Speak with Wysa">
+                {tracing && <span className="trace" aria-hidden />}
                 <img src="/assets/composer-waveform.svg" width={20} height={20} alt="" />Speak
                 {c.voiceTip === 'speak' && <span className="tooltip" role="status">Voice isn't supported in this browser.</span>}
               </button>
@@ -58,7 +74,14 @@ export function ChatA({ c }: { c: ChatModel }) {
                   <img src="/assets/composer-send.svg" width={24} height={24} alt="" />
                 </button>
               ) : (
-                <button className="round-btn" onClick={() => c.openRecorder('mic')} disabled={!c.online} aria-label="Dictate a voice note">
+                <button
+                  className="round-btn"
+                  // Recording starts the moment the mic is pressed; the tick stops it.
+                  onPointerDown={(e) => { if (e.button === 0) { e.preventDefault(); c.openRecorder('mic'); } }}
+                  onClick={(e) => { if (e.detail === 0) c.openRecorder('mic'); }}
+                  disabled={!c.online}
+                  aria-label="Dictate"
+                >
                   <img src="/assets/composer-mic.svg" width={46} height={46} alt="" />
                   {c.voiceTip === 'mic' && <span className="tooltip" role="status">Voice isn't supported in this browser.</span>}
                 </button>
@@ -71,11 +94,13 @@ export function ChatA({ c }: { c: ChatModel }) {
   );
 }
 
-function MessageRow({ m, c }: { m: Message; c: ChatModel }) {
+function MessageRow({ m, c, typed, fadeSpeaker, enterFade }: {
+  m: Message; c: ChatModel; typed?: string; fadeSpeaker?: boolean; enterFade?: boolean;
+}) {
   const playing = c.playingId === m.id;
   if (m.role === 'user') {
     return (
-      <div className="msg user">
+      <div className={`msg user${enterFade ? ' tr-fade' : ''}`}>
         <div className="bubble">{m.text}</div>
       </div>
     );
@@ -97,10 +122,10 @@ function MessageRow({ m, c }: { m: Message; c: ChatModel }) {
     );
   }
   return (
-    <div className="msg wysa">
-      <p className="text">{m.text}</p>
-      {m.status === 'done' && (
-        <button className={`speaker${playing ? ' playing' : ''}`} onClick={() => c.togglePlayback(m.id, m.text)} aria-label={playing ? 'Stop' : 'Play message'} aria-pressed={playing}>
+    <div className={`msg wysa${enterFade ? ' tr-fade' : ''}`}>
+      <p className="text">{typed ?? m.text}{typed !== undefined && <span className="type-caret a" />}</p>
+      {m.status === 'done' && typed === undefined && (
+        <button className={`speaker${playing ? ' playing' : ''}${fadeSpeaker ? ' fade-in' : ''}`} onClick={() => c.togglePlayback(m.id, m.text)} aria-label={playing ? 'Stop' : 'Play message'} aria-pressed={playing}>
           <img src="/assets/speaker.svg" width={24} height={24} alt="" />
         </button>
       )}

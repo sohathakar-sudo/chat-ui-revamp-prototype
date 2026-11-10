@@ -12,8 +12,8 @@ export function HomeA({ startVoice, tip }: HomeProps) {
           <div className="veil" />
           <HomeStatusBar />
           <div className="hero-head">
-            <h1>Hi {config.userName}!</h1>
-            <div className="right">
+            <h1 className="tb-l">Hi {config.userName}!</h1>
+            <div className="right tb-r">
               <span className="crisis">Crisis Help</span>
               <img src="/assets/icon-more.svg" width={24} height={24} alt="" />
             </div>
