@@ -33,6 +33,7 @@ Build a working, clickable prototype of the revamped Wysa chat experience as a R
 - Voice mode Type → Chat thread.
 - Voice mode X → Home.
 - Voice mode gear → Choose a Voice → Voice mode (Idle).
+- Chat thread composer Speak pill → Voice mode (Idle). The composer mic opens the voice-note recorder. (Added 10 Nov 2026 to match the updated Figma composer.)
 
 ### 3. Loader
 
@@ -169,7 +170,6 @@ Full-screen view with X (top-left) and gear (top-right). States:
 - Barge-in (interrupting Wysa by speaking).
 - Home secondary content: ⋮ menu, "For your day" cards and bottom nav destinations.
 - The Progress tab itself (only the tooltip is in scope).
-- Entering full voice mode from the Chat thread.
 - Login, accounts, real user names and persistence across sessions.
 - Analytics and logging.
 - Production hardening, including HIPAA compliance; this is a prototype, not for clinical use.

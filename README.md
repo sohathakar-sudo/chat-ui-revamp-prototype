@@ -74,7 +74,7 @@ Places where the build had to go beyond, or choose between, the Figma file and t
 2. **Idle orb animation.** Figma's motion data scales the inner core to 2×, which doesn't match the static Idle frame. The animation ends at the static frame's size.
 3. **Idle controls.** The Figma Idle frame shows Type/Mute. The PRD says no controls in Idle, so they're hidden.
 4. **Reconnecting.** The PRD describes four static dots and no message text. The Figma frame now shows a plain ring plus text. The build uses Figma's ring and the PRD's no-text rule.
-5. **Chat composer buttons.** The updated composer has a "Speak" pill and a mic button. The placeholder ("tap the mic to dictate") points the mic at voice notes, so the Speak pill opens full voice mode. The PRD lists voice mode from Chat as out of scope, so confirm this is intended.
+5. **Chat composer buttons.** The updated composer has a "Speak" pill and a mic button. The placeholder ("tap the mic to dictate") points the mic at voice notes, so the Speak pill opens full voice mode. Confirmed by product (10 Nov 2026); the PRD is updated to match.
 6. **No Figma frame, built from existing styles:** typing indicator, Thinking and Paused orbs, Mute active state, "Something went wrong · Retry", "You're offline" banner, progress and "voice not supported" tooltips, speaker playing state, mic-denied and "Couldn't catch that" messages.
 7. **Listening ring.** `listen-ring.svg` is Figma's listening graphic with the bars removed, so the bars can move with the mic level.
 8. **Fonts.** The composer uses Google Sans Flex (loaded from Google Fonts). SF Pro is used where the device has it (Apple devices). Elsewhere it falls back to the system font, so text metrics can differ slightly.
