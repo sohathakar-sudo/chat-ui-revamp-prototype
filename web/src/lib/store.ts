@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react';
 import { config, prototype, type VoiceName } from '../../../shared/config';
+import type { Trans } from './transitions';
 
 export type Screen = 'loader' | 'chat' | 'home' | 'voice' | 'voices';
 export type Variant = (typeof prototype.variants)[number]['id'];
@@ -27,6 +28,8 @@ export type State = {
   switcherOpen: boolean;
   /** Variant B opens the mic as soon as voice mode is entered from Home or Chat. */
   voiceAutoStart: boolean;
+  /** Running Variant B screen transition, if any. */
+  trans: Trans | null;
 };
 
 let id = 0;
@@ -55,6 +58,7 @@ let state: State = {
   variant: initialVariant,
   switcherOpen: false,
   voiceAutoStart: false,
+  trans: null,
 };
 
 const listeners = new Set<() => void>();
@@ -72,14 +76,18 @@ export const store = {
   updateMessage(mid: string, patch: Partial<Message>) {
     store.set((s) => ({ messages: s.messages.map((m) => (m.id === mid ? { ...m, ...patch } : m)) }));
   },
-  go(screen: Screen) {
-    store.set({ screen });
+  go(screen: Screen, source?: 'chat' | 'speak') {
+    nav(screen, {}, source);
   },
   /** Enter voice mode from Home or Chat (call inside the tap so audio is unlocked). */
-  enterVoice() {
-    store.set({ screen: 'voice', voiceAutoStart: state.variant === 'B' });
+  enterVoice(source?: 'chat' | 'speak') {
+    nav('voice', { voiceAutoStart: state.variant === 'B' }, source);
   },
 };
+
+// Set by transitions.ts (avoids a circular import at module load).
+let nav: (to: Screen, patch?: Partial<State>, source?: 'chat' | 'speak') => void = (to, patch) => store.set({ screen: to, ...patch });
+export function setNavigator(fn: typeof nav) { nav = fn; }
 
 export function useStore<T>(select: (s: State) => T): T {
   return useSyncExternalStore(store.subscribe, () => select(state));
@@ -92,4 +100,9 @@ if (typeof window !== 'undefined') {
     .then((r) => (r.ok ? r.json() : null))
     .then((s) => s && store.set({ status: s }))
     .catch(() => {});
+}
+
+// Dev-only handle for design review (freeze transitions at a given moment, inspect state).
+if (import.meta.env.DEV && typeof window !== 'undefined') {
+  (window as unknown as { __wysa: typeof store }).__wysa = store;
 }

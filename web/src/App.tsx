@@ -6,10 +6,13 @@ import { Chat } from './screens/Chat';
 import { Voice } from './screens/Voice';
 import { ChooseVoice } from './screens/ChooseVoice';
 import { VariantSwitcher, openSwitcher } from './components/VariantSwitcher';
+import { SWOOSH_MS, transClass } from './lib/transitions';
 
 export function App() {
   const screen = useStore((s) => s.screen);
   const variant = useStore((s) => s.variant);
+  const trans = useStore((s) => s.trans);
+  const swoosh = trans?.swoosh && trans.stage !== 'press' ? trans.swoosh : null;
 
   // Scale the 412×917 phone frame to fit shorter desktop windows.
   useEffect(() => {
@@ -26,11 +29,16 @@ export function App() {
     <div className="stage">
       <div className="device">
         <div className="screen">
-          {screen === 'loader' && <Loader />}
-          {screen === 'home' && <Home />}
-          {screen === 'chat' && <Chat />}
-          {screen === 'voice' && <Voice />}
-          {screen === 'voices' && <ChooseVoice />}
+          <div className={`scr-wrap ${transClass(trans)}`}>
+            {screen === 'loader' && <Loader />}
+            {screen === 'home' && <Home />}
+            {screen === 'chat' && <Chat />}
+            {screen === 'voice' && <Voice />}
+            {screen === 'voices' && <ChooseVoice />}
+          </div>
+          {swoosh && (
+            <div className={`swoosh ${swoosh}`} key={trans!.kind} style={{ animationDuration: `${SWOOSH_MS}ms` }} aria-hidden />
+          )}
         </div>
       </div>
       <button className="pc-open" onClick={openSwitcher} aria-label="Open prototype controls">

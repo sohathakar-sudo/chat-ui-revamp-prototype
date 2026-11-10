@@ -2,7 +2,7 @@ import { config } from '../../../../shared/config';
 import { store } from '../../lib/store';
 import { HomeStatusBar } from '../../components/StatusBar';
 
-export type HomeProps = { startVoice(): void; tip: boolean };
+export type HomeProps = { startVoice(source?: 'speak'): void; tip: boolean };
 
 export function HomeA({ startVoice, tip }: HomeProps) {
   return (
@@ -21,7 +21,7 @@ export function HomeA({ startVoice, tip }: HomeProps) {
         </div>
         <div className="hero-body">
           <div className="orb-btn">
-            <button className="home-orb" onClick={startVoice} aria-label="Tap to talk">
+            <button className="home-orb" onClick={() => startVoice()} aria-label="Tap to talk">
               <img src="/assets/home-orb.svg" alt="" />
             </button>
             {tip && <div className="tooltip home-tip">Voice isn't supported in this browser.</div>}
@@ -33,7 +33,7 @@ export function HomeA({ startVoice, tip }: HomeProps) {
             </div>
             <div className="pills">
               <button className="pill" onClick={() => store.go('chat')}>Chat</button>
-              <button className="pill speak" onClick={startVoice}>Speak</button>
+              <button className="pill speak" onClick={() => startVoice()}>Speak</button>
             </div>
           </div>
         </div>

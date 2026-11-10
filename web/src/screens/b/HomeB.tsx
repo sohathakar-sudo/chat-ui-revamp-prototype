@@ -1,10 +1,13 @@
 // Variant B Home (Figma 531:9413).
 import { config } from '../../../../shared/config';
-import { store } from '../../lib/store';
+import { store, useStore } from '../../lib/store';
 import { HomeStatusBar } from '../../components/StatusBar';
 import type { HomeProps } from '../a/HomeA';
 
 export function HomeB({ startVoice, tip }: HomeProps) {
+  const trans = useStore((s) => s.trans);
+  // Keep the pressed pill's orange glow through the 0.2s press delay and the exit.
+  const pressed = trans && trans.stage !== 'enter' ? trans.source : undefined;
   return (
     <>
       <div className="hb-hero">
@@ -19,7 +22,7 @@ export function HomeB({ startVoice, tip }: HomeProps) {
         <div className="hb-body">
           <div className="hb-center">
             <div className="orb-btn hb-orb-wrap">
-              <button className="hb-orb" onClick={startVoice} aria-label="Talk to Wysa">
+              <button className="hb-orb" onClick={() => startVoice()} aria-label="Talk to Wysa">
                 <span className="hb-orb-a"><span className="spin-b"><img src="/assets/b/home-orb-inner.png" alt="" /></span></span>
                 <span className="hb-orb-b"><span><img src="/assets/b/home-orb-outer.svg" alt="" /></span></span>
               </button>
@@ -31,8 +34,8 @@ export function HomeB({ startVoice, tip }: HomeProps) {
             </div>
           </div>
           <div className="hb-pills">
-            <button className="hb-pill" onClick={() => store.go('chat')}>Chat</button>
-            <button className="hb-pill speak" onClick={startVoice}>Speak</button>
+            <button className={`hb-pill${pressed === 'chat' ? ' pressing' : ''}`} onClick={() => store.go('chat', 'chat')}>Chat</button>
+            <button className={`hb-pill speak${pressed === 'speak' ? ' pressing' : ''}`} onClick={() => startVoice('speak')}>Speak</button>
           </div>
         </div>
       </div>

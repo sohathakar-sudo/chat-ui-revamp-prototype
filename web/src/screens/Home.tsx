@@ -25,10 +25,10 @@ export function Home() {
     return () => { clearTimeout(t); window.removeEventListener('pointerdown', off, { capture: true }); };
   }, [tip]);
 
-  const startVoice = () => {
+  const startVoice = (source?: 'speak') => {
     if (!voiceSupported()) { setTip(true); return; }
     unlockAudio();
-    store.enterVoice();
+    store.enterVoice(source);
   };
 
   return (

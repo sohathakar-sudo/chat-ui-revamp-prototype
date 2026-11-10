@@ -99,7 +99,9 @@ export function useChat() {
     toggleHeaderTip() { setHeaderTip((v) => !v); },
     back() {
       stopMessagePlayback();
-      store.set({ screen: 'home', homeTransition: true });
+      // Variant A plays the loader-to-home transition; Variant B swooshes (transitions.ts).
+      if (store.get().variant === 'B') store.go('home');
+      else store.set({ screen: 'home', homeTransition: true });
     },
     retry(id: string) { if (!isReplying() && store.get().online) retryReply(id); },
     togglePlayback: toggleMessagePlayback,

@@ -31,6 +31,7 @@ Without an API key, Wysa answers from a small set of canned placeholder replies,
 - `/?screen=home|chat|voice|voices` skips the loader.
 - `/?state=listening|thinking|speaking|paused|reconnecting|failed|denied|timeout` shows a voice-mode state with sample text.
 - Combine with a variant, for example `/?variant=B&state=speaking`.
+- In the browser console (dev only), `__wysa` is the app store. For example, `__wysa.set({ trans: { kind: 'chat-voice', stage: 'exit', swoosh: 'ltr', until: 0 } })` replays a transition stage for review.
 
 ## How it's put together
 
@@ -45,6 +46,7 @@ Without an API key, Wysa answers from a small set of canned placeholder replies,
 | `web/src/screens/` | Screen containers (Loader, Home, Chat, Voice, ChooseVoice) that pick the variant's view. |
 | `web/src/screens/a/`, `screens/b/` | Variant-specific UI only. |
 | `web/src/components/VariantSwitcher.tsx` | The prototype controls modal. |
+| `web/src/lib/transitions.ts` | Variant B screen transitions: stages and timings (CSS at the end of `styles.css`). |
 | `web/public/assets/` (`b/` for Variant B) | All design assets, downloaded from Figma (no Figma URLs at runtime). |
 
 History, voice choice and variant live in browser memory only. A refresh starts over at the Loader (the `?variant=` link still applies).
@@ -98,3 +100,4 @@ Places where the build had to go beyond, or choose between, the Figma file and t
 14. **B Speak in chat** opens voice mode straight into Listening, like Speak on Home. The orange voice-note recorder stays in code but isn't reachable in B.
 15. **B voice X → Chat.** Closing voice mode in B lands on the Chat thread, which shows the whole voice conversation; Chat's back arrow then goes Home. Variant A's X still goes Home.
 16. **B Pause on Ready.** Pause is shown on the Start Speaking screen (per Figma), so it works there too: it cancels a mic that is still opening and holds in Paused until tapped again.
+17. **B transitions** follow the written spec in PRD section 15. The gradient swoosh reference (`280-1400`) is a Figma code layer whose source can't be read through the Figma tools, so the swoosh is built from the description using B's yellow `#FEED9F` and blue `#AAE5EC` on cream. It needs a visual check against the reference.

@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { prototype } from '../../../shared/config';
 import { store, useStore, type Variant } from '../lib/store';
+import { cancelTransition } from '../lib/transitions';
 
 export function openSwitcher() {
   store.set({ switcherOpen: true });
@@ -37,6 +38,7 @@ export function VariantSwitcher() {
   const pickVariant = (v: Variant) => {
     if (v === variant) return;
     // Same screen, same conversation and voice; voice mode pauses itself on the switch.
+    cancelTransition();
     store.set({ variant: v });
   };
 

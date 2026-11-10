@@ -217,6 +217,26 @@ Labels and entry points differ by variant (A / B) where noted.
   - Bottom controls: Type (keyboard icon) bottom-left and Pause (pause icon) bottom-right, as white pills with labels.
 - **Choose a Voice:** title "Choose a Voice", four cards each with a different soft pastel gradient blob, white Continue pill with orange text.
 
+### 15. Variant B screen transitions
+
+Timings live in one place (`web/src/lib/transitions.ts`). Durations not given below were chosen by the builder (~300–600ms per step). Variant A switches screens instantly for now.
+
+- **Gradient swoosh** (shared): a cream band with yellow (`#FEED9F`) and blue (`#AAE5EC`) edges sweeps across the screen. The screens swap at its midpoint, when the screen is fully cream. Reference: code layer `280-1400`. Its source can't be read through the Figma MCP, so the swoosh is built from this description and needs a visual check.
+- **Home → Chat:**
+  - Chat pill press: subtle orange glow; the transition starts 0.2s after release.
+  - The hero slides down while its content (greeting, question, pills) and the feed fade out.
+  - On the blank screen, Chat's top bar and bottom bar come in.
+  - Wysa's latest message types in; when it finishes, "Read aloud" pops in.
+- **Home → Voice:**
+  - Speak pill press: the same orange glow and 0.2s delay.
+  - The hero expands to fill the screen as its content fades, leaving a blank screen.
+  - Voice's top bar, bottom bar and both glows come in; "Start Speaking" blurs in (about 1s from the start); the orb scales up and settles.
+  - The mic opens once the animation ends.
+- **Chat → Voice:** swoosh left to right to a blank cream screen. The bars swap from Chat's to Voice's while the glows come in from the top and bottom; then "Start Speaking" blurs in and the orb settles.
+- **Voice → Chat** (X or Type): swoosh left to right. The orb shrinks and disappears; the bars swap from Voice's to Chat's; the thread fades in.
+- **Chat → Home** (back): swoosh right to left. The hero pops back up from below and the "For your day" feed and bottom nav slide up with it.
+- Taps are ignored while a transition runs. Switching variant cancels a running transition. Reduced-motion settings skip the animations.
+
 ## Edge case summary
 
 ### Launch, session and variants
@@ -289,7 +309,7 @@ Decided:
 Open:
 
 1. **Loader code layer** (`269-1307`): the source must be exported by design before it can be reused (section 1). Until then the loader is an approximation.
-2. **Transition frames** (page `146-748`): frame-level links are needed to read them.
+2. **Transition references:** Variant B transitions are built from the product owner's written spec (section 15). The swoosh code layer (`280-1400`) still needs its source exported to match it exactly. Variant A transitions are pending.
 3. **No-frame states needing design review:**
    - Shared: typing indicator, "Something went wrong · Retry", "You're offline" banner, header tooltips, message playing state, inline mic-denied and "Couldn't catch that" messages.
    - Variant A: Thinking and Paused orbs, Mute active state.

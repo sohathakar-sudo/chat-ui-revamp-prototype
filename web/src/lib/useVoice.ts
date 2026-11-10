@@ -359,7 +359,8 @@ export function useVoice(variant: Variant) {
     stopAll();
     phaseRef.current = 'idle';
     reply.current = freshReply();
-    store.set({ screen, voiceAutoStart: false });
+    store.set({ voiceAutoStart: false });
+    store.go(screen); // Variant B animates this (transitions.ts)
   };
 
   // Variant B opens the mic as soon as voice mode opens from Home or Chat
@@ -367,11 +368,13 @@ export function useVoice(variant: Variant) {
   // Deferred one tick so React's dev double-mount (StrictMode) can't cancel it:
   // the first mount's timer is cleared, the second one runs.
   useEffect(() => {
+    // Variant B also waits for the entry animation (Start Speaking blur, orb) before the mic opens.
+    const until = store.get().trans?.until ?? 0;
     const t = window.setTimeout(() => {
       if (!store.get().voiceAutoStart) return;
       store.set({ voiceAutoStart: false });
       startListening();
-    }, 0);
+    }, Math.max(0, until - Date.now()));
     return () => window.clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

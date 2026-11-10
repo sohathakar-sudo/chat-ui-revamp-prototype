@@ -1,11 +1,41 @@
 // Variant B chat thread (Figma 531:8808 Chat/Active, 531:8779 Chat/Typing).
-import type { Message } from '../../lib/store';
+import { useEffect, useState } from 'react';
+import { store, type Message } from '../../lib/store';
 import type { ChatModel } from '../../lib/useChat';
 import { StatusBar } from '../../components/StatusBar';
 import { Recorder } from '../../components/Recorder';
 
+// Home → Chat: once the bars are in, Wysa's latest message types in, then "Read aloud" pops in.
+const TYPE_START_MS = 520;
+const TYPE_CHAR_MS = 28;
+
+function useTypeIn(messages: Message[]) {
+  const [state] = useState(() => {
+    const t = store.get().trans;
+    if (!(t?.kind === 'home-chat' && t.stage === 'enter')) return null;
+    const last = [...messages].reverse().find((m) => m.role === 'assistant' && m.status === 'done');
+    return last ? { id: last.id, len: last.text.length } : null;
+  });
+  const [shown, setShown] = useState(state ? 0 : Infinity);
+  useEffect(() => {
+    if (!state) return;
+    let n = 0;
+    let iv = 0;
+    const start = window.setTimeout(() => {
+      iv = window.setInterval(() => {
+        n += 1;
+        setShown(n);
+        if (n >= state.len) { window.clearInterval(iv); setShown(Infinity); }
+      }, TYPE_CHAR_MS);
+    }, TYPE_START_MS);
+    return () => { window.clearTimeout(start); window.clearInterval(iv); };
+  }, [state]);
+  return { typingId: shown === Infinity ? null : state?.id ?? null, shown, typedId: state?.id ?? null };
+}
+
 export function ChatB({ c }: { c: ChatModel }) {
   const typing = c.hasText && !c.recording;
+  const typeIn = useTypeIn(c.messages);
   return (
     <div className={`scr chat chat-b${typing ? ' is-typing' : ''}`}>
       <img className="cb-glow-cool" src="/assets/b/chat-glow-cool.svg" alt="" />
@@ -25,7 +55,16 @@ export function ChatB({ c }: { c: ChatModel }) {
       {!c.online && <div className="offline" role="status">You're offline</div>}
 
       <div className="thread cb-thread" ref={c.threadRef}>
-        {c.messages.map((m) => <MessageRowB key={m.id} m={m} c={c} />)}
+        {c.messages.map((m) => (
+          <MessageRowB
+            key={m.id}
+            m={m}
+            c={c}
+            typed={m.id === typeIn.typingId ? m.text.slice(0, typeIn.shown) : undefined}
+            popRead={m.id === typeIn.typedId}
+            enterFade={!!typeIn.typedId && m.id !== typeIn.typedId}
+          />
+        ))}
       </div>
 
       {c.notice && <p className="notice" role="alert">{c.notice}</p>}
@@ -65,11 +104,13 @@ export function ChatB({ c }: { c: ChatModel }) {
   );
 }
 
-function MessageRowB({ m, c }: { m: Message; c: ChatModel }) {
+function MessageRowB({ m, c, typed, popRead, enterFade }: {
+  m: Message; c: ChatModel; typed?: string; popRead?: boolean; enterFade?: boolean;
+}) {
   const playing = c.playingId === m.id;
   if (m.role === 'user') {
     return (
-      <div className="msg user">
+      <div className={`msg user${enterFade ? ' tr-fade' : ''}`}>
         <div className="cb-card">{m.text}</div>
       </div>
     );
@@ -89,10 +130,10 @@ function MessageRowB({ m, c }: { m: Message; c: ChatModel }) {
     );
   }
   return (
-    <div className="msg wysa cb-wysa">
-      <p className="text">{m.text}</p>
-      {m.status === 'done' && (
-        <button className={`cb-read${playing ? ' playing' : ''}`} onClick={() => c.togglePlayback(m.id, m.text)} aria-pressed={playing} aria-label={playing ? 'Stop reading aloud' : 'Read aloud'}>
+    <div className={`msg wysa cb-wysa${enterFade ? ' tr-fade' : ''}`}>
+      <p className="text">{typed ?? m.text}{typed !== undefined && <span className="type-caret" />}</p>
+      {m.status === 'done' && typed === undefined && (
+        <button className={`cb-read${playing ? ' playing' : ''}${popRead ? ' pop-in' : ''}`} onClick={() => c.togglePlayback(m.id, m.text)} aria-pressed={playing} aria-label={playing ? 'Stop reading aloud' : 'Read aloud'}>
           <img src="/assets/b/speaker.svg" width={20} height={18} alt="" />
           Read aloud
         </button>
