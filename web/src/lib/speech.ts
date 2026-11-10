@@ -4,15 +4,16 @@ import { config, type VoiceName } from '../../../shared/config';
 import { store } from './store';
 
 // ---------- support ----------
-type SR = typeof window extends { SpeechRecognition: infer T } ? T : any;
-const SpeechRecognitionCtor: SR | undefined =
-  typeof window !== 'undefined' ? (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition : undefined;
+// Read the ctor lazily: it may not be on `window` at module load, and tests can stub it.
+function getSRCtor(): any {
+  return typeof window !== 'undefined' ? (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition : undefined;
+}
 
 export function voiceSupported() {
   if (typeof window === 'undefined') return false;
   const { stt, tts } = store.get().status;
   const mic = !!navigator.mediaDevices?.getUserMedia;
-  const sttOk = stt === 'server' ? typeof MediaRecorder !== 'undefined' : !!SpeechRecognitionCtor;
+  const sttOk = stt === 'server' ? typeof MediaRecorder !== 'undefined' : !!getSRCtor();
   const ttsOk = tts === 'server' ? true : 'speechSynthesis' in window;
   return mic && sttOk && ttsOk;
 }
@@ -70,7 +71,7 @@ export function createRecognizer(opts: {
   onUpdate(text: string, partial: boolean): void;
   onError(code: string): void;
 }): Recognizer {
-  const rec = new SpeechRecognitionCtor();
+  const rec = new (getSRCtor())();
   rec.continuous = true;
   rec.interimResults = true;
   rec.lang = 'en-US';
