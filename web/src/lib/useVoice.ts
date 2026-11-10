@@ -359,25 +359,9 @@ export function useVoice(variant: Variant) {
     stopAll();
     phaseRef.current = 'idle';
     reply.current = freshReply();
-    store.set({ voiceAutoStart: false });
     store.go(screen); // Variant B animates this (transitions.ts)
   };
 
-  // Variant B opens the mic as soon as voice mode opens from Home or Chat
-  // (that tap already unlocked audio). Returning from Choose a Voice lands in Ready.
-  // Deferred one tick so React's dev double-mount (StrictMode) can't cancel it:
-  // the first mount's timer is cleared, the second one runs.
-  useEffect(() => {
-    // Variant B also waits for the entry animation (Start Speaking blur, orb) before the mic opens.
-    const until = store.get().trans?.until ?? 0;
-    const t = window.setTimeout(() => {
-      if (!store.get().voiceAutoStart) return;
-      store.set({ voiceAutoStart: false });
-      startListening();
-    }, Math.max(0, until - Date.now()));
-    return () => window.clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   // Switching variant mid-turn pauses the conversation; it stays paused in the new variant.
   const firstVariant = useRef(variant);
@@ -444,8 +428,11 @@ export function useVoice(variant: Variant) {
     }
   })();
 
+  /** Live mic level 0..1 while listening (0 otherwise). Drives Variant B's bottom glow. */
+  const micLevel = () => (mic.current && phaseRef.current === 'listening' ? mic.current.level() : 0);
+
   return {
-    phase, idleReason, caption, transcript, replyText, spokenWords, barEls,
+    phase, idleReason, caption, transcript, replyText, spokenWords, barEls, micLevel,
     onScreenTap, toggleMute, leave,
   };
 }

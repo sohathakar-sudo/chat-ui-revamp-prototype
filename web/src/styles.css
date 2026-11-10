@@ -390,9 +390,9 @@ p { margin: 0; }
 .chat-b .msg.user + .msg.user { margin-top: 24px; }
 .cb-wysa .text { font: 300 16px/1.26 var(--pjs); color: var(--b-ink); }
 .cb-read { display: flex; align-items: center; gap: 10px; font: 400 12px/20px var(--pjs); color: var(--muted); }
-.cb-read.playing { color: var(--b-orange); animation: speaker-pulse 1s ease-in-out infinite; }
+.cb-read.playing { animation: speaker-pulse 1s ease-in-out infinite; }
 .cb-card {
-  width: 100%; padding: 24px; background: #def8f6; border-radius: 24px 24px 2px 24px;
+  max-width: 307px; padding: 16px; background: #def8f6; border-radius: 24px 24px 2px 24px;
   font: 400 16px/1.26 var(--pjs); color: var(--sub); white-space: pre-wrap; overflow-wrap: anywhere;
 }
 .typing.b i { background: var(--b-orange); }
@@ -431,8 +431,19 @@ p { margin: 0; }
 
 /* ---------- Voice B (531:9276, 531:9326, 531:9367, 531:10040) ---------- */
 .vb { background: var(--b-bg); overflow: hidden; }
-.vb-glow { position: absolute; pointer-events: none; z-index: 0; transform: rotate(180deg); }
-.vb-glow img { display: block; width: 100%; height: 100%; }
+.vb-glow {
+  position: absolute; pointer-events: none; z-index: 0; transform: rotate(180deg);
+  opacity: 0; transition: opacity 700ms ease, translate 700ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.vb-glow.on { opacity: 1; translate: 0 0; }
+.vb-glow-bottom:not(.on) { translate: 0 140px; }
+.vb-glow-top:not(.on) { translate: 0 -140px; }
+.vb-glow img { display: block; width: 100%; height: 100%; will-change: transform; }
+/* Ready → Listening stand-ins (VoiceB.tsx) */
+.vb .vb-flight { position: absolute; z-index: 3; margin: 0; pointer-events: none; transform-origin: center; flex: none; }
+.vb-orb.arriving { animation: fade-in 250ms ease 600ms both; }
+.vb-arrive .vb-transcript { animation: fade-in 450ms ease 250ms both; }
+.vb-arrive .vb-caption { animation: fade-in 400ms ease 450ms both; }
 .vb-glow-bottom { width: 800px; height: 621px; left: calc(50% + 18px - 400px); bottom: -315px; }
 .vb-glow-bottom.listen { bottom: -332px; }
 .vb-glow-top { width: 1048px; height: 771px; left: calc(50% - 515px); top: -513px; }
@@ -607,7 +618,6 @@ p { margin: 0; }
       "Start Speaking" blurs in and the orb scales out and settles. */
 .tr-enter.tr-home-voice .vb-head, .tr-enter.tr-chat-voice .vb-head { animation: bar-in-top 450ms var(--ease-out) both; }
 .tr-enter.tr-home-voice .vb-ctrls, .tr-enter.tr-chat-voice .vb-ctrls { animation: bar-in-bottom 450ms var(--ease-out) both; }
-.tr-enter.tr-home-voice .vb-glow, .tr-enter.tr-chat-voice .vb-glow { animation-duration: 900ms; animation-timing-function: var(--ease-out); }
 .tr-enter.tr-home-voice .vb-start-title, .tr-enter.tr-chat-voice .vb-start-title { animation: blur-in 700ms ease-out 450ms both; }
 .tr-enter.tr-home-voice .vb-landing-orb, .tr-enter.tr-chat-voice .vb-landing-orb { animation: orb-settle 750ms var(--overshoot) 700ms both; }
 

@@ -26,8 +26,6 @@ export type State = {
   /** Design variant (A/B). Session only; a link can preselect it with ?variant=B. */
   variant: Variant;
   switcherOpen: boolean;
-  /** Variant B opens the mic as soon as voice mode is entered from Home or Chat. */
-  voiceAutoStart: boolean;
   /** Running Variant B screen transition, if any. */
   trans: Trans | null;
 };
@@ -57,7 +55,6 @@ let state: State = {
   status: { llm: 'placeholder', stt: 'browser', tts: 'browser' },
   variant: initialVariant,
   switcherOpen: false,
-  voiceAutoStart: false,
   trans: null,
 };
 
@@ -81,7 +78,7 @@ export const store = {
   },
   /** Enter voice mode from Home or Chat (call inside the tap so audio is unlocked). */
   enterVoice(source?: 'chat' | 'speak') {
-    nav('voice', { voiceAutoStart: state.variant === 'B' }, source);
+    nav('voice', {}, source);
   },
 };
 
