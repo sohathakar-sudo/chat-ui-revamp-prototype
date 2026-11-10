@@ -40,7 +40,10 @@ export function App() {
           </div>
           {bloom && <div className={`bloom ${bloom}`} aria-hidden />}
           {swoosh && (
-            <div className={`swoosh ${swoosh}`} key={trans!.kind} style={{ animationDuration: `${SWOOSH_MS}ms` }} aria-hidden />
+            <div className={`swoosh ${swoosh}`} key={trans!.kind} style={{ ['--swoosh-ms' as string]: `${SWOOSH_MS}ms` }} aria-hidden>
+              <i className="sw-cyan" />
+              <i className="sw-orange" />
+            </div>
           )}
         </div>
       </div>

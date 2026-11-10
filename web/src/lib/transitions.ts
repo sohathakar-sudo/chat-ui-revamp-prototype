@@ -35,13 +35,14 @@ const T: Record<Variant, Partial<Record<TransKind, Timeline>>> = {
   B: {
     'home-chat': { press: 200, exit: 450, enter: 900 },
     'home-voice': { press: 200, exit: 550, enter: 1500 },
-    'chat-voice': { press: 0, exit: 400, enter: 1500, swoosh: 'ltr' },
-    'voice-chat': { press: 0, exit: 400, enter: 700, swoosh: 'ltr' },
-    'chat-home': { press: 0, exit: 400, enter: 900, swoosh: 'rtl' },
+    'chat-voice': { press: 0, exit: 300, enter: 1500, swoosh: 'ltr' },
+    'voice-chat': { press: 0, exit: 300, enter: 700, swoosh: 'ltr' },
+    'chat-home': { press: 0, exit: 300, enter: 900, swoosh: 'rtl' },
   },
 };
-/** Full swoosh duration; it fully covers the screen at its midpoint, when the swap happens. */
-export const SWOOSH_MS = 800;
+/** Variant B swoosh duration (matched to the reference recording): two soft glows sweep across
+ *  while the old screen fades out and the new one fades in underneath. */
+export const SWOOSH_MS = 650;
 
 let timers: number[] = [];
 

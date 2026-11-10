@@ -221,7 +221,7 @@ Labels and entry points differ by variant (A / B) where noted.
 
 Timings live in one place (`web/src/lib/transitions.ts`). Durations not given below were chosen by the builder (~300–600ms per step). Variant A switches screens instantly for now.
 
-- **Gradient swoosh** (shared): a cream band with yellow (`#FEED9F`) and blue (`#AAE5EC`) edges sweeps across the screen. The screens swap at its midpoint, when the screen is fully cream. Reference: code layer `280-1400`. Its source can't be read through the Figma MCP, so the swoosh is built from this description and needs a visual check.
+- **Gradient swoosh** (shared): matched to the product owner's screen recording of the reference (code layer `280-1400`). Over about 650ms, a soft peach glow (`#FBCB9B`) enters low on the left and sweeps right and slightly up, fading as it goes, while a cyan glow (`#B7EEEF`) swells low-left behind it. The old screen fades out and the new one fades in underneath. Chat → Home is the mirror image (right to left).
 - **Home → Chat:**
   - Chat pill press: subtle orange glow; the transition starts 0.2s after release.
   - The hero slides down while its content (greeting, question, pills) and the feed fade out.
@@ -232,7 +232,7 @@ Timings live in one place (`web/src/lib/transitions.ts`). Durations not given be
   - The hero expands to fill the screen as its content fades, leaving a blank screen.
   - Voice's top bar, bottom bar and both glows come in; "Start Speaking" blurs in (about 1s from the start); the orb scales up and settles.
   - Ready then waits for a tap before the mic opens.
-- **Chat → Voice:** swoosh left to right to a blank cream screen. The bars swap from Chat's to Voice's while the glows come in from the top and bottom; then "Start Speaking" blurs in and the orb settles.
+- **Chat → Voice:** swoosh left to right while Chat fades out. The bars swap from Chat's to Voice's while the glows come in from the top and bottom; then "Start Speaking" blurs in and the orb settles.
 - **Voice → Chat** (X or Type): swoosh left to right. The orb shrinks and disappears; the bars swap from Voice's to Chat's; the thread fades in.
 - **Chat → Home** (back): swoosh right to left. The hero pops back up from below and the "For your day" feed and bottom nav slide up with it.
 - Taps are ignored while a transition runs. Switching variant cancels a running transition. Reduced-motion settings skip the animations.
@@ -309,7 +309,7 @@ Decided:
 Open:
 
 1. **Loader code layer** (`269-1307`): the source must be exported by design before it can be reused (section 1). Until then the loader is an approximation.
-2. **Transition references:** Variant A and B transitions are built from the product owner's written spec (section 15). Variant A: Home↔Chat (hero expand/settle, sideways top-bar swap, input rise, greeting types in), Home→Voice, Chat→Voice (Speak-pill glow blooms into a full-screen gradient) and Voice→Chat (transcript kept). The swoosh code layer (`280-1400`) still needs its source exported to match B exactly.
+2. **Transition references:** Variant A and B transitions are built from the product owner's written spec (section 15). Variant A: Home↔Chat (hero expand/settle, sideways top-bar swap, input rise, greeting types in), Home→Voice, Chat→Voice (Speak-pill glow blooms into a full-screen gradient) and Voice→Chat (transcript kept).
 3. **Voice orb while talking (Variant A):** a placeholder grow-and-shrink pulse during Listening and Wysa Speaking. The final orb animation is still to be chosen.
 3. **No-frame states needing design review:**
    - Shared: typing indicator, "Something went wrong · Retry", "You're offline" banner, header tooltips, message playing state, inline mic-denied and "Couldn't catch that" messages.
