@@ -76,9 +76,8 @@ export function ChatA({ c }: { c: ChatModel }) {
               ) : (
                 <button
                   className="round-btn"
-                  // Recording starts the moment the mic is pressed; the tick stops it.
-                  onPointerDown={(e) => { if (e.button === 0) { e.preventDefault(); c.openRecorder('mic'); } }}
-                  onClick={(e) => { if (e.detail === 0) c.openRecorder('mic'); }}
+                  // Tap the mic to start dictating; the tick (in the recorder) stops it.
+                  onClick={() => c.openRecorder('mic')}
                   disabled={!c.online}
                   aria-label="Dictate"
                 >

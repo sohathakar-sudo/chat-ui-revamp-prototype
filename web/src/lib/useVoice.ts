@@ -154,8 +154,16 @@ export function useVoice(variant: Variant) {
           el.style.transform = `scale(${(1 + Math.min(1, lv * 1.6) * 0.18).toFixed(3)})`;
           return;
         }
+        // Listening bars are sensitive to sound: empty (collapsed) in silence, rising as the user speaks.
+        const amp = Math.min(1, lv * 1.6);
         const wobble = 0.75 + 0.25 * Math.sin(performance.now() / (140 + i * 37) + i);
-        el.style.transform = `scaleY(${(0.45 + Math.min(1, lv * 1.6) * 0.85 * wobble).toFixed(3)})`;
+        if (amp < 0.05) {
+          el.style.transform = 'scaleY(0.04)';
+          el.style.opacity = '0';
+        } else {
+          el.style.transform = `scaleY(${(0.12 + amp * 0.88 * wobble).toFixed(3)})`;
+          el.style.opacity = '1';
+        }
       });
       raf.current = requestAnimationFrame(tick);
     };

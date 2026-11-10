@@ -32,6 +32,8 @@ export async function openMic(): Promise<Mic> {
     throw e;
   }
   const ctx = new AudioContext();
+  // A context created outside a gesture can start suspended; resume it so levels flow.
+  if (ctx.state === 'suspended') ctx.resume().catch(() => {});
   const src = ctx.createMediaStreamSource(stream);
   const analyser = ctx.createAnalyser();
   analyser.fftSize = 512;

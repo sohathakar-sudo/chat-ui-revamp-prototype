@@ -92,7 +92,7 @@ function Orb({ phase, barEls }: { phase: Phase; barEls: MutableRefObject<(HTMLEl
   }
   if (phase === 'listening' || phase === 'thinking') {
     return (
-      <div className={`orb${phase === 'listening' ? ' talking' : ''}`}>
+      <div className={`orb${phase === 'listening' ? ' breathe' : ''}`}>
         <div className={`glow listen${phase === 'thinking' ? ' pulse' : ''}`}><img src="/assets/listen-glow.svg" alt="" /></div>
         <img className="listen-ring" src="/assets/listen-ring.svg" alt="" />
         <div className="bars listen">

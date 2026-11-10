@@ -22,7 +22,7 @@ type Timeline = { press: number; exit: number; enter: number; swoosh?: 'ltr' | '
 const T: Record<Variant, Partial<Record<TransKind, Timeline>>> = {
   A: {
     // Hero expands into Chat; bars swap sideways; input rises; greeting types in.
-    'home-chat': { press: 0, exit: 550, enter: 1300 },
+    'home-chat': { press: 0, exit: 550, enter: 1500 },
     // Hero expands; bars swap; Voice's own orb entrance plays.
     'home-voice': { press: 0, exit: 550, enter: 1500 },
     // Input drops, messages go, then the screen settles back into the hero.
