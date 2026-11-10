@@ -1,7 +1,7 @@
 <!-- Derived from listen-graphic.svg (Figma 523:6666): ring only, bars removed so they can be animated live. -->
 <svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="166" height="166" viewBox="0 0 166 166" fill="none" xmlns="http://www.w3.org/2000/svg">
 <g id="Ellipse 22" filter="url(#filter0_f_0_16)">
-<circle cx="83" cy="83" r="72" fill="white" stroke-width="6" stroke="#A3ECE7"/>
+<circle cx="83" cy="83" r="72" fill="white" stroke-width="6" stroke="#AAE5EC"/>
 </g>
 <defs>
 <filter id="filter0_f_0_16" x="0" y="0" width="166" height="166" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">

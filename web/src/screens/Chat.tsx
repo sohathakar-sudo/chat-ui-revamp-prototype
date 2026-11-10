@@ -4,7 +4,7 @@ import { store, useStore, type Message } from '../lib/store';
 import { addUserMessage, isReplying, requestReply, retryReply } from '../lib/conversation';
 import { stopMessagePlayback, toggleMessagePlayback, voiceSupported } from '../lib/speech';
 import { StatusBar } from '../components/StatusBar';
-import { BackIcon, SendIcon } from '../components/Icons';
+import { BackIcon } from '../components/Icons';
 import { Recorder } from '../components/Recorder';
 
 const MIC_DENIED = 'Wysa needs mic access to talk. Enable it in your browser settings.';
@@ -19,8 +19,17 @@ export function Chat() {
   const [recording, setRecording] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [progressTip, setProgressTip] = useState(false);
-  const [voiceTip, setVoiceTip] = useState(false);
+  const [voiceTip, setVoiceTip] = useState<'pill' | 'mic' | null>(null);
   const threadRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  // The composer grows with typed text (535:10486).
+  useLayoutEffect(() => {
+    const el = inputRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${el.scrollHeight}px`;
+  }, [text, recording]);
 
   // Keep the newest message in view.
   useLayoutEffect(() => {
@@ -32,10 +41,10 @@ export function Chat() {
   useEffect(() => { if (!online) setRecording(false); }, [online]);
 
   // Tooltips: auto-dismiss after 3s or on any tap.
-  const anyTip = progressTip || voiceTip;
+  const anyTip = progressTip || !!voiceTip;
   useEffect(() => {
     if (!anyTip) return;
-    const close = () => { setProgressTip(false); setVoiceTip(false); };
+    const close = () => { setProgressTip(false); setVoiceTip(null); };
     const t = setTimeout(close, config.tooltipMs);
     const timer = setTimeout(() => window.addEventListener('pointerdown', close, { once: true, capture: true }), 0);
     return () => { clearTimeout(t); clearTimeout(timer); window.removeEventListener('pointerdown', close, { capture: true }); };
@@ -59,10 +68,17 @@ export function Chat() {
 
   const openRecorder = () => {
     if (!online) return;
-    if (!voiceSupported()) { setVoiceTip(true); return; }
+    if (!voiceSupported()) { setVoiceTip('mic'); return; }
     stopMessagePlayback();
     setNotice(null);
     setRecording(true);
+  };
+
+  // "Speak" pill opens full voice mode; the mic dictates a voice note.
+  const openVoiceMode = () => {
+    if (!voiceSupported()) { setVoiceTip('pill'); return; }
+    stopMessagePlayback();
+    store.go('voice');
   };
 
   const back = () => {
@@ -105,26 +121,38 @@ export function Chat() {
         />
       ) : (
         <div className="composer">
-          <label className="field">
-            <input
-              value={text}
-              placeholder="Send a message"
-              onChange={(e) => { setText(e.target.value); if (notice) setNotice(null); }}
-              onKeyDown={(e) => { if (e.key === 'Enter' && !e.nativeEvent.isComposing) { e.preventDefault(); onSubmit(); } }}
-              enterKeyHint="send"
-              aria-label="Send a message"
-            />
-          </label>
-          {hasText ? (
-            <button className="act" onClick={onSubmit} disabled={replying || !online} aria-label="Send">
-              <span className="send-icon"><SendIcon /></span>Send
-            </button>
-          ) : (
-            <button className="act" onClick={openRecorder} disabled={!online} aria-label="Record a voice note">
-              <img src="/assets/waveform.svg" width={31} height={34} alt="" />Speak
-              {voiceTip && <span className="tooltip" role="status">Voice isn't supported in this browser.</span>}
-            </button>
-          )}
+          <div className="card">
+            <label className={`field${hasText ? ' has-text' : ''}`}>
+              <textarea
+                ref={inputRef}
+                rows={1}
+                value={text}
+                placeholder="Write, or tap the mic to dictate"
+                onChange={(e) => { setText(e.target.value); if (notice) setNotice(null); }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); onSubmit(); }
+                }}
+                enterKeyHint="send"
+                aria-label="Message"
+              />
+            </label>
+            <div className="row">
+              <button className="speak-pill" onClick={openVoiceMode} disabled={!online} aria-label="Speak with Wysa">
+                <img src="/assets/composer-waveform.svg" width={20} height={20} alt="" />Speak
+                {voiceTip === 'pill' && <span className="tooltip" role="status">Voice isn't supported in this browser.</span>}
+              </button>
+              {hasText ? (
+                <button className="round-btn send" onClick={onSubmit} disabled={replying || !online} aria-label="Send">
+                  <img src="/assets/composer-send.svg" width={24} height={24} alt="" />
+                </button>
+              ) : (
+                <button className="round-btn" onClick={openRecorder} disabled={!online} aria-label="Dictate a voice note">
+                  <img src="/assets/composer-mic.svg" width={46} height={46} alt="" />
+                  {voiceTip === 'mic' && <span className="tooltip" role="status">Voice isn't supported in this browser.</span>}
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>

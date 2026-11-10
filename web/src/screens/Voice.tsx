@@ -18,7 +18,7 @@ const LISTEN_BARS = [
 ];
 const LISTEN_CY = 74.57;
 const SPEAK_BARS = [
-  { left: 0, top: 5.2, h: 44.729 }, { left: 16, top: 0, h: 55.135 }, { left: 32, top: 14.69, h: 25.761 }, { left: 48, top: 14.4, h: 26.332 },
+  { left: 0, top: 3.77, h: 32.45 }, { left: 14, top: 0, h: 40 }, { left: 28, top: 10.66, h: 18.689 }, { left: 42, top: 10.45, h: 19.103 },
 ];
 
 type Reply = {
@@ -498,7 +498,16 @@ function Orb({ phase, barEls }: { phase: Phase; barEls: React.MutableRefObject<(
       </div>
     );
   }
-  // Paused, Reconnecting, failed and mic-denied: the static orb from the Figma frames.
+  if (phase === 'reconnecting' || phase === 'failed') {
+    // Reconnecting (530:8646): plain ring, no bars.
+    return (
+      <div className="orb">
+        <div className="glow listen"><img src="/assets/reconnect-glow.svg" alt="" /></div>
+        <img className="listen-ring" src="/assets/reconnect-ring.svg" alt="" />
+      </div>
+    );
+  }
+  // Paused and mic-denied: no Figma frame, so the static Listening orb.
   return (
     <div className="orb">
       <div className="glow listen"><img src="/assets/listen-glow.svg" alt="" /></div>
