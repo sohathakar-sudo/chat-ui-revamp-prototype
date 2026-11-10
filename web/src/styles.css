@@ -116,7 +116,7 @@ p { margin: 0; }
   filter: drop-shadow(0 0 3px rgba(80, 159, 170, 0.5));
   font-weight: 590; font-size: 16px; line-height: 1.2; color: var(--navy);
 }
-.pill.speak { color: var(--cta); }
+.pill.speak { position: relative; color: var(--cta); }
 
 .today { width: 100%; flex: 1; background: #fff; padding: 24px 16px; display: flex; flex-direction: column; gap: 16px; }
 .today h2 { margin: 0; font-weight: 590; font-size: 26px; line-height: 1.4; color: var(--secondary); }
@@ -721,7 +721,7 @@ p { margin: 0; }
 /* Chat → Voice (press): a blue glow traces around the Speak pill... */
 @property --sweep { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
 /* A soft blue comet sweeps around the pill: a blurred blue dot orbiting the border. */
-.speak-pill .trace {
+.speak-pill .trace, .pill .trace {
   position: absolute; inset: -8px; border-radius: 140px; pointer-events: none;
   background: conic-gradient(from var(--sweep),
     rgba(53, 127, 213, 0) 0deg, rgba(53, 127, 213, 0) 300deg,
@@ -730,17 +730,8 @@ p { margin: 0; }
           mask: radial-gradient(closest-side, transparent 58%, #000 72%, #000 92%, transparent 100%);
   filter: blur(7px); animation: trace 560ms linear forwards;
 }
-.speak-pill.tracing { background: #eaf2fc; box-shadow: 0 0 18px rgba(53, 127, 213, 0.45); transition: background 200ms ease, box-shadow 200ms ease; }
+.speak-pill.tracing, .pill.speak.tracing { background: #eaf2fc; box-shadow: 0 0 18px rgba(53, 127, 213, 0.45); transition: background 200ms ease, box-shadow 200ms ease; }
 @keyframes trace { from { --sweep: 0deg; } to { --sweep: 720deg; } }
-/* ...then blooms from the pill into a full-screen blue-to-cream gradient that covers the swap (App.tsx). */
-.bloom {
-  position: absolute; left: 78px; bottom: 59px; width: 80px; height: 80px; margin: 0 0 -40px -40px;
-  border-radius: 50%; z-index: 40; pointer-events: none;
-  background: radial-gradient(circle, var(--teal-soft) 0%, var(--cyan-50) 40%, var(--bg) 68%);
-}
-.bloom.exit { animation: bloom-grow 500ms cubic-bezier(0.5, 0, 0.3, 1) forwards; }
-.bloom.enter { transform: scale(30); animation: fade-out 600ms ease 100ms forwards; }
-@keyframes bloom-grow { from { transform: scale(0.5); opacity: 0.6; } to { transform: scale(30); opacity: 1; } }
 .tr-A.tr-exit.tr-chat-voice .composer { animation: a-sink 300ms var(--ease-in) forwards; }
 .tr-A.tr-exit.tr-chat-voice .thread { animation: fade-out 250ms ease forwards; }
 
@@ -779,3 +770,35 @@ p { margin: 0; }
 .ch-B { background: linear-gradient(100deg, #e4f8f6 0%, #fbfbf1 46%, #f7e7a6 100%); }
 .ch-card.sel { border-color: #c9ccd8; box-shadow: 0 0 0 1px #c9ccd8, 0 6px 18px rgba(26, 26, 50, 0.08); }
 .chooser .continue { margin-top: auto; margin-bottom: 24px; }
+
+/* Variant A Speak -> Voice (Home and Chat): a blue + white swoosh sweeps the whole screen while Voice
+   swaps in. No Figma frame: built from the existing blue/teal + white tokens; flagged for design review. */
+.swoosh.bw i { filter: blur(28px); }
+.sw-blue {
+  width: 130%; height: 75%;
+  background: radial-gradient(closest-side, rgba(53, 127, 213, 0.55), rgba(53, 127, 213, 0.28) 55%, rgba(53, 127, 213, 0));
+  animation: sw-blue var(--swoosh-ms, 900ms) cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+.sw-white {
+  width: 120%; height: 90%;
+  background: radial-gradient(closest-side, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0.85) 55%, rgba(255, 255, 255, 0));
+  animation: sw-white var(--swoosh-ms, 900ms) cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+@keyframes sw-blue {
+  0% { left: -40%; top: 80%; opacity: 0; }
+  35% { left: 20%; top: 62%; opacity: 1; }
+  70% { left: 70%; top: 40%; opacity: 0.9; }
+  100% { left: 140%; top: 20%; opacity: 0; }
+}
+@keyframes sw-white {
+  0% { left: -50%; top: 85%; opacity: 0; }
+  40% { left: 30%; top: 60%; opacity: 1; }
+  75% { left: 85%; top: 40%; opacity: 0.9; }
+  100% { left: 150%; top: 25%; opacity: 0; }
+}
+/* Voice orb scales in and settles with a slight overshoot. */
+.tr-A.tr-enter.tr-home-voice .orb-wrap, .tr-A.tr-enter.tr-chat-voice .orb-wrap { animation: orb-settle 650ms var(--overshoot) 150ms both; }
+/* Chat/Home top bar out as the swoosh passes. */
+.tr-A.tr-exit.tr-chat-voice .tb-l, .tr-A.tr-exit.tr-chat-voice .tb-r,
+.tr-A.tr-exit.tr-home-voice .tb-l, .tr-A.tr-exit.tr-home-voice .tb-r { animation: bar-out-top 300ms var(--ease-in) forwards; }
+.tr-A.tr-exit.tr-home-voice .bottom-nav, .tr-A.tr-exit.tr-home-voice .today { animation: bar-out-bottom 300ms var(--ease-in) forwards; }

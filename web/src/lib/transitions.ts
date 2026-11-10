@@ -23,12 +23,13 @@ const T: Record<Variant, Partial<Record<TransKind, Timeline>>> = {
   A: {
     // Hero expands into Chat; bars swap sideways; input rises; greeting types in.
     'home-chat': { press: 0, exit: 550, enter: 1500 },
-    // Hero expands; bars swap; Voice's own orb entrance plays.
-    'home-voice': { press: 0, exit: 550, enter: 1500 },
+    // Speak pill traces blue, then the same blue + white swoosh into Voice (see chat-voice).
+    'home-voice': { press: 600, exit: 500, enter: 1500, swoosh: 'ltr' },
     // Input drops, messages go, then the screen settles back into the hero.
     'chat-home': { press: 0, exit: 650, enter: 1000 },
-    // Press: a blue glow traces the Speak pill. Exit: it blooms into a full-screen gradient.
-    'chat-voice': { press: 600, exit: 500, enter: 1500 },
+    // Press: a blue glow traces the Speak pill. Then a blue + white swoosh sweeps the whole screen
+    // while Voice swaps in (bars swap, orb scales in with a slight overshoot). Flag: no Figma frame.
+    'chat-voice': { press: 600, exit: 500, enter: 1500, swoosh: 'ltr' },
     // Orb shrinks away, text fades, bars swap; the thread keeps the voice transcript.
     'voice-chat': { press: 0, exit: 450, enter: 700 },
   },

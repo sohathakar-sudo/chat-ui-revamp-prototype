@@ -11,7 +11,7 @@ const TYPE_START_MS = 650;
 export function ChatA({ c }: { c: ChatModel }) {
   const typeIn = useTypeIn(c.messages, TYPE_START_MS);
   const trans = useStore((s) => s.trans);
-  // Chat → Voice: the Speak pill's blue glow traces around it before the bloom.
+  // Chat → Voice: the Speak pill's blue glow traces around it before the screen swoosh.
   const tracing = trans?.kind === 'chat-voice' && trans.stage === 'press';
   return (
     <div className="scr chat">

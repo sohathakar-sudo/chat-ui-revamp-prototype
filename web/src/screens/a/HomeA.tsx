@@ -1,10 +1,11 @@
 import { config } from '../../../../shared/config';
-import { store } from '../../lib/store';
+import { store, useStore } from '../../lib/store';
 import { HomeStatusBar } from '../../components/StatusBar';
 
 export type HomeProps = { startVoice(source?: 'speak'): void; tip: boolean };
 
 export function HomeA({ startVoice, tip }: HomeProps) {
+  const tracing = useStore((st) => st.trans?.kind === 'home-voice' && st.trans.stage === 'press' && st.trans.source === 'speak');
   return (
     <>
       <div className="hero">
@@ -33,7 +34,10 @@ export function HomeA({ startVoice, tip }: HomeProps) {
             </div>
             <div className="pills">
               <button className="pill" onClick={() => store.go('chat')}>Chat</button>
-              <button className="pill speak" onClick={() => startVoice()}>Speak</button>
+              <button className={`pill speak${tracing ? ' tracing' : ''}`} onClick={() => startVoice('speak')}>
+                {tracing && <span className="trace" aria-hidden />}
+                Speak
+              </button>
             </div>
           </div>
         </div>
