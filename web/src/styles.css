@@ -802,3 +802,7 @@ p { margin: 0; }
 .tr-A.tr-exit.tr-chat-voice .tb-l, .tr-A.tr-exit.tr-chat-voice .tb-r,
 .tr-A.tr-exit.tr-home-voice .tb-l, .tr-A.tr-exit.tr-home-voice .tb-r { animation: bar-out-top 300ms var(--ease-in) forwards; }
 .tr-A.tr-exit.tr-home-voice .bottom-nav, .tr-A.tr-exit.tr-home-voice .today { animation: bar-out-bottom 300ms var(--ease-in) forwards; }
+
+/* Voice muted: the orb alone, breathing slowly (no Figma frame; flagged for design review). */
+.orb.paused { animation: orb-paused 4s ease-in-out infinite; }
+@keyframes orb-paused { 0%, 100% { transform: scale(1); opacity: 0.85; } 50% { transform: scale(1.04); opacity: 1; } }

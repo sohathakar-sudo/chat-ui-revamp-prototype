@@ -116,11 +116,12 @@ function Orb({ phase, barEls }: { phase: Phase; barEls: MutableRefObject<(HTMLEl
       </div>
     );
   }
-  // Paused and mic-denied: no Figma frame, so the static Listening orb.
+  // Paused (muted) and mic-denied: no Figma frame. Orb only (Listening ring + glow, no bars/waveform)
+  // with a slow breathing loop. Flagged for design review.
   return (
-    <div className="orb">
+    <div className="orb paused">
       <div className="glow listen"><img src="/assets/listen-glow.svg" alt="" /></div>
-      <img className="listen-ring" src="/assets/listen-graphic.svg" alt="" />
+      <img className="listen-ring" src="/assets/listen-ring.svg" alt="" />
     </div>
   );
 }
