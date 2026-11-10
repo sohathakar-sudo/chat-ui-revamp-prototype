@@ -1,0 +1,9 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="172" height="3" viewBox="0 0 172 3" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path id="connector-nextitem" d="M1.5 1.5H4.51786M170.5 1.5H167.482M12.5655 1.5H18.6012M26.6488 1.5H32.6845M40.7321 1.5H46.7679M54.8155 1.5H60.8512M68.8988 1.5H74.9345M82.9821 1.5H89.0178M97.0655 1.5H103.101M111.149 1.5H117.185M125.232 1.5H131.268M139.315 1.5H145.351M153.399 1.5H159.435" stroke-width="3" stroke-linecap="round" stroke="url(#paint0_linear_0_450)"/>
+<defs>
+<linearGradient id="paint0_linear_0_450" x1="0" y1="3.5" x2="172" y2="3.5" gradientUnits="userSpaceOnUse">
+<stop stop-color="#BD5800"/>
+<stop offset="1" stop-color="#D1D3D7"/>
+</linearGradient>
+</defs>
+</svg>
