@@ -97,6 +97,21 @@ export const config = {
   serverPort: 8787,
 };
 
+/**
+ * Prototype controls (variant switcher modal). Add a variant or a control here; the modal
+ * renders whatever is listed, so no new UI work is needed.
+ */
+export const prototype = {
+  defaultVariant: 'A' as 'A' | 'B',
+  variants: [
+    { id: 'A' as const, label: 'Variant A', description: 'Iteration 1: white and teal, glowing orb' },
+    { id: 'B' as const, label: 'Variant B', description: 'Iteration 2: pastel gradients, orange accent' },
+  ],
+  controls: [
+    { id: 'variant' as const, label: 'Design variant' },
+  ],
+};
+
 export const VOICE_ORDER: VoiceName[] = ['Cindy', 'Daniel', 'Lucy', 'Harrison'];
 
 export type ChatTurn = { role: 'user' | 'assistant'; content: string };

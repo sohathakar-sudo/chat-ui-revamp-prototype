@@ -1,7 +1,8 @@
 import { useSyncExternalStore } from 'react';
-import { config, type VoiceName } from '../../../shared/config';
+import { config, prototype, type VoiceName } from '../../../shared/config';
 
 export type Screen = 'loader' | 'chat' | 'home' | 'voice' | 'voices';
+export type Variant = (typeof prototype.variants)[number]['id'];
 
 export type Message = {
   id: string;
@@ -21,6 +22,11 @@ export type State = {
   /** Wysa message whose speaker icon is playing. */
   playingId: string | null;
   status: { llm: string; stt: 'browser' | 'server'; tts: 'browser' | 'server' };
+  /** Design variant (A/B). Session only; a link can preselect it with ?variant=B. */
+  variant: Variant;
+  switcherOpen: boolean;
+  /** Variant B opens the mic as soon as voice mode is entered from Home or Chat. */
+  voiceAutoStart: boolean;
 };
 
 let id = 0;
@@ -31,6 +37,13 @@ const devScreen = import.meta.env.DEV && typeof location !== 'undefined'
   ? (new URLSearchParams(location.search).get('screen') as Screen | null)
   : null;
 
+const linkVariant = typeof location !== 'undefined'
+  ? (new URLSearchParams(location.search).get('variant') || '').toUpperCase()
+  : '';
+const initialVariant: Variant = prototype.variants.some((v) => v.id === linkVariant)
+  ? (linkVariant as Variant)
+  : prototype.defaultVariant;
+
 let state: State = {
   screen: devScreen || (import.meta.env.DEV && typeof location !== 'undefined' && location.search.includes('state=') ? 'voice' : 'loader'),
   homeTransition: false,
@@ -39,6 +52,9 @@ let state: State = {
   playingId: null,
   online: typeof navigator === 'undefined' ? true : navigator.onLine,
   status: { llm: 'placeholder', stt: 'browser', tts: 'browser' },
+  variant: initialVariant,
+  switcherOpen: false,
+  voiceAutoStart: false,
 };
 
 const listeners = new Set<() => void>();
@@ -58,6 +74,10 @@ export const store = {
   },
   go(screen: Screen) {
     store.set({ screen });
+  },
+  /** Enter voice mode from Home or Chat (call inside the tap so audio is unlocked). */
+  enterVoice() {
+    store.set({ screen: 'voice', voiceAutoStart: state.variant === 'B' });
   },
 };
 

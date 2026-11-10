@@ -5,9 +5,11 @@ import { Home } from './screens/Home';
 import { Chat } from './screens/Chat';
 import { Voice } from './screens/Voice';
 import { ChooseVoice } from './screens/ChooseVoice';
+import { VariantSwitcher, openSwitcher } from './components/VariantSwitcher';
 
 export function App() {
   const screen = useStore((s) => s.screen);
+  const variant = useStore((s) => s.variant);
 
   // Scale the 412×917 phone frame to fit shorter desktop windows.
   useEffect(() => {
@@ -31,6 +33,10 @@ export function App() {
           {screen === 'voices' && <ChooseVoice />}
         </div>
       </div>
+      <button className="pc-open" onClick={openSwitcher} aria-label="Open prototype controls">
+        Variants <span>{variant}</span>
+      </button>
+      <VariantSwitcher />
     </div>
   );
 }

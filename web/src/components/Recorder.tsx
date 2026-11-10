@@ -9,9 +9,12 @@ type Props = {
   /** Called with the transcript; null = discarded silently (too short / cancelled). '' = nothing heard. */
   onDone(text: string | null): void;
   onDenied(): void;
+  /** Variant accent: teal (A) or orange (B, no Figma frame: restyled from A). */
+  accent?: 'teal' | 'orange';
 };
 
-export function Recorder({ onDone, onDenied }: Props) {
+export function Recorder({ onDone, onDenied, accent = 'teal' }: Props) {
+  const color = accent === 'orange' ? '#DE761E' : '#4999A5';
   const [elapsed, setElapsed] = useState(0);
   const [levels, setLevels] = useState<number[]>(() => Array(BARS).fill(0));
   const finished = useRef(false);
@@ -110,11 +113,11 @@ export function Recorder({ onDone, onDenied }: Props) {
             {levels.map((lv, i) => {
               const h = Math.max(4, Math.min(30, 4 + lv * 30));
               const x = 5 + i * 8;
-              return <line key={i} x1={x} x2={x} y1={12 - h / 2} y2={12 + h / 2} stroke="#4999A5" strokeWidth={2} strokeLinecap="round" />;
+              return <line key={i} x1={x} x2={x} y1={12 - h / 2} y2={12 + h / 2} stroke={color} strokeWidth={2} strokeLinecap="round" />;
             })}
           </svg>
         </div>
-        <button className="rec-ok" onClick={() => finish(false)} aria-label="Send voice note">
+        <button className="rec-ok" style={{ background: color }} onClick={() => finish(false)} aria-label="Send voice note">
           <img src="/assets/check.svg" width={18} height={20} alt="" />
         </button>
       </div>
