@@ -63,7 +63,7 @@ Labels and entry points differ by variant (A / B) where noted.
 - Home → Speak or tap on the orb → Voice mode.
 - Chat thread composer Speak pill → Voice mode (both variants; Variant B opens straight into Listening, like entering from Home).
 - Voice mode Type → Chat thread.
-- Voice mode X → Home.
+- Voice mode X → Home (A) / Chat thread (B). In B the Chat thread shows the whole voice conversation, and its back arrow then goes Home.
 - Voice mode gear (A) / Wysa's Voice pill (B) → Choose a Voice → Voice mode (Ready).
 
 ### 4. Loader
@@ -107,7 +107,7 @@ Labels and entry points differ by variant (A / B) where noted.
 - **Listening:** mic open, orb animates with mic input level, live transcript of the user's speech is shown (ending in "…" while partial). The turn ends automatically after 1.5s of silence (threshold in config), then → Thinking.
 - **Thinking:** caption "Thinking…", orb pulses softly. Wait for the LLM reply, then → Wysa Speaking.
 - **Wysa Speaking:** the reply is spoken in the selected voice and its text is revealed in sync: already-spoken words in dark text, upcoming words faded. When speech ends, the mic reopens automatically → Listening.
-- **Paused:** entered via Mute (A) / Pause (B). Speech output and mic both stop and the orb is static. The control shows an active/toggled state. Tapping it again resumes → Listening.
+- **Paused:** entered via Mute (A) / Pause (B). Speech output and mic both stop and the orb is static. The control shows an active/toggled state. Tapping it again resumes → Listening. In Variant B, Pause also works from Ready (it cancels a mic that is still opening).
 - **Reconnecting:** error state. The app retries in the background and on success returns to the state it was in.
 - Controls: X and the voice settings entry are always shown. Type and Mute (A) / Pause (B) are shown in every state except Variant A's Ready.
 - Every completed user turn and Wysa reply is added to the shared conversation in real time.
@@ -242,7 +242,7 @@ Labels and entry points differ by variant (A / B) where noted.
 - User speaks while Wysa is speaking: ignored. The mic reopens only after Wysa finishes.
 - Pause/Mute during Thinking: the reply is held. On resume, the held reply plays (Wysa Speaking) before returning to Listening.
 - Type tapped mid-speech: speech stops, the full reply text is in the thread, and the user lands in the Chat thread.
-- X tapped mid-turn: all audio and mic stop immediately, completed parts of the turn are kept in history, and the user goes to Home.
+- X tapped mid-turn: all audio and mic stop immediately, completed parts of the turn are kept in history, and the user goes to Home (A) / the Chat thread (B).
 - Browser tab hidden or backgrounded: auto-enter Paused.
 - Voice changed mid-conversation: the new voice applies from Wysa's next reply.
 

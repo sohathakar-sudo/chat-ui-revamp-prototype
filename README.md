@@ -96,3 +96,5 @@ Places where the build had to go beyond, or choose between, the Figma file and t
 12. **B states with no frame:** Thinking (pulsing Listening orb), Reconnecting and "Couldn't connect" (static Listening orb with the error caption), the "Tap to start" timeout, typing dots, the retry line and tooltips.
 13. **B Ready.** The mic opens straight away when voice mode is entered from Home. Returning from Choose a Voice, or switching variant into voice mode, lands on "Start Speaking" and waits for a tap, because browsers need a tap before they play audio.
 14. **B Speak in chat** opens voice mode straight into Listening, like Speak on Home. The orange voice-note recorder stays in code but isn't reachable in B.
+15. **B voice X → Chat.** Closing voice mode in B lands on the Chat thread, which shows the whole voice conversation; Chat's back arrow then goes Home. Variant A's X still goes Home.
+16. **B Pause on Ready.** Pause is shown on the Start Speaking screen (per Figma), so it works there too: it cancels a mic that is still opening and holds in Paused until tapped again.

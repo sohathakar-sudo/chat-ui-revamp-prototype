@@ -1,5 +1,6 @@
 // Variant B voice mode (Figma 531:9276 Landing, 531:9326 Speaking, 531:9367 Listening, 531:10040 Paused).
 // Thinking, Reconnecting and the "Tap to start" timeout have no frame: built from these frames' parts.
+// X goes to the Chat thread (which shows the whole voice conversation); Chat's back arrow then goes Home.
 import { useStore } from '../../lib/store';
 import { splitWords } from '../../lib/speech';
 import type { Phase, VoiceModel } from '../../lib/useVoice';
@@ -49,7 +50,7 @@ export function VoiceB({ v }: { v: VoiceModel }) {
       <StatusBar />
       <div className="vb-main">
         <div className="vb-head">
-          <button className="v-x" onClick={(e) => { e.stopPropagation(); leave('home'); }} aria-label="End session">
+          <button className="v-x" onClick={(e) => { e.stopPropagation(); leave('chat'); }} aria-label="End session">
             <img src="/assets/close.svg" width={20} height={20} alt="" />
           </button>
           <button className={`vb-pill vb-voice${warmChrome ? ' warm' : ''}`} onClick={(e) => { e.stopPropagation(); leave('voices'); }}>

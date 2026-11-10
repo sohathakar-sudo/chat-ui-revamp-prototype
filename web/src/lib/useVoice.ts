@@ -314,11 +314,20 @@ export function useVoice(variant: Variant) {
           beginReply(); // the held turn failed while paused: retry it
         }
       } else {
+        unlockAudio(); // the resume tap counts as the gesture browsers need for audio
         startListening();
       }
       return;
     }
-    if (p === 'idle') return;
+    if (p === 'idle') {
+      // Variant A hides Mute in Ready. Variant B shows Pause there (Voice/Landing):
+      // it cancels a mic that is still opening and holds the screen in Paused.
+      if (variant !== 'B') return;
+      stopListening();
+      setIdleReason('initial');
+      setPhase('paused');
+      return;
+    }
     heldReply.current = p === 'thinking' || (p === 'reconnecting' && reconnectFor.current === 'reply');
     if (p === 'speaking') {
       // Speech stops; the full reply is already in the thread.
@@ -355,11 +364,15 @@ export function useVoice(variant: Variant) {
 
   // Variant B opens the mic as soon as voice mode opens from Home or Chat
   // (that tap already unlocked audio). Returning from Choose a Voice lands in Ready.
+  // Deferred one tick so React's dev double-mount (StrictMode) can't cancel it:
+  // the first mount's timer is cleared, the second one runs.
   useEffect(() => {
-    if (store.get().voiceAutoStart) {
+    const t = window.setTimeout(() => {
+      if (!store.get().voiceAutoStart) return;
       store.set({ voiceAutoStart: false });
       startListening();
-    }
+    }, 0);
+    return () => window.clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
