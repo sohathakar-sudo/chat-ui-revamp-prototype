@@ -6,7 +6,7 @@ import { createRecognizer, MicDeniedError, openMic, transcribeOnServer, type Mic
 const BARS = 25;
 
 type Props = {
-  /** Called with the transcript; null = discarded silently (too short / cancelled). '' = nothing heard. */
+  /** Called with the transcript; null = discarded (cancelled). '' = nothing heard. */
   onDone(text: string | null): void;
   onDenied(): void;
   /** Variant accent: teal (A) or orange (B, no Figma frame: restyled from A). */
@@ -17,143 +17,129 @@ export function Recorder({ onDone, onDenied, accent = 'teal' }: Props) {
   const color = accent === 'orange' ? '#DE761E' : '#4999A5';
   const [elapsed, setElapsed] = useState(0);
   const [levels, setLevels] = useState<number[]>(() => Array(BARS).fill(0));
-  /** Live transcript while dictating (browser STT), shown so it's clear speech is being heard. */
-  const [live, setLive] = useState('');
   /** After the tick: transcribing (no Figma frame: spinner in place of the waveform, flagged for design review). */
   const [busy, setBusy] = useState(false);
-  const cancelled = useRef(false);
-  const finished = useRef(false);
-  const liveRef = useRef('');
-  const parts = useRef<{ mic?: Mic; rec?: Recognizer; media?: MediaRecorder; chunks: Blob[]; start: number }>({ chunks: [], start: 0 });
-
-  const cleanup = () => {
-    const p = parts.current;
-    p.rec?.abort();
-    if (p.media && p.media.state !== 'inactive') p.media.stop();
-    p.mic?.close();
-  };
-
-  const finish = async (cancel: boolean) => {
-    // The bin still works while transcribing: it drops the result and returns to the empty input.
-    if (cancel && finished.current && !cancelled.current) { cancelled.current = true; onDone(null); return; }
-    if (finished.current) return;
-    finished.current = true;
-    const p = parts.current;
-    const duration = performance.now() - p.start;
-    if (cancel || duration < config.voiceNote.minMs) { cleanup(); onDone(null); return; }
-    let text = '';
-    setBusy(true);
-    try {
-      if (store.get().status.stt === 'server' && p.media) {
-        const stopped = new Promise<void>((r) => p.media!.addEventListener('stop', () => r(), { once: true }));
-        p.media.stop();
-        await stopped;
-        p.mic?.close();
-        text = await transcribeOnServer(new Blob(p.chunks, { type: p.media.mimeType }));
-      } else if (p.rec) {
-        p.mic?.close();
-        text = await p.rec.stop();
-      }
-    } catch {
-      text = '';
-    }
-    // Fall back to whatever was heard live if the final result came back empty.
-    if (!text.trim()) text = liveRef.current;
-    cleanup();
-    if (!cancelled.current) onDone(text.trim());
-  };
+  /** Buttons act on the live session only; a stale (StrictMode throwaway) mount can never touch it. */
+  const api = useRef<{ finish(cancel: boolean): void } | null>(null);
 
   useEffect(() => {
-    let raf = 0;
-    let alive = true;
-    // Reset per-mount: React StrictMode (dev) mounts → cleans up → mounts again on
-    // the same refs, and the cleanup sets finished=true; without this the second
-    // mount starts "finished" and the tick/bin do nothing.
-    finished.current = false;
-    cancelled.current = false;
+    type Session = {
+      alive: boolean; finished: boolean; cancelled: boolean;
+      mic?: Mic; rec?: Recognizer; media?: MediaRecorder;
+      chunks: Blob[]; start: number; live: string; raf: number; pulse: number;
+    };
+    const S: Session = { alive: true, finished: false, cancelled: false, chunks: [], start: performance.now(), live: '', raf: 0, pulse: 0 };
     const serverMode = store.get().status.stt === 'server';
+    let startTimer = 0;
 
-    const runLevels = (mic: Mic) => {
-      let last = 0;
+    const cleanup = () => {
+      S.rec?.abort();
+      if (S.media && S.media.state !== 'inactive') { try { S.media.stop(); } catch { /* noop */ } }
+      S.mic?.close();
+    };
+
+    const finish = async (cancel: boolean) => {
+      // The bin always works, even while transcribing: drop everything, back to the empty input.
+      if (cancel) {
+        if (S.cancelled) return;
+        S.cancelled = true; S.finished = true; cancelAnimationFrame(S.raf);
+        cleanup();
+        onDone(null);
+        return;
+      }
+      if (S.finished) return;
+      S.finished = true;
+      cancelAnimationFrame(S.raf);
+      setBusy(true); // spinner right away
+      const shownAt = performance.now();
+      let text = '';
+      try {
+        if (serverMode && S.media) {
+          if (S.media.state !== 'inactive') {
+            const stopped = new Promise<void>((r) => S.media!.addEventListener('stop', () => r(), { once: true }));
+            S.media.stop();
+            await Promise.race([stopped, new Promise<void>((r) => setTimeout(r, 1500))]);
+          }
+          S.mic?.close();
+          if (S.chunks.length) text = await transcribeOnServer(new Blob(S.chunks, { type: S.media.mimeType }));
+        } else if (S.rec) {
+          S.mic?.close();
+          text = await S.rec.stop();
+        }
+      } catch {
+        text = '';
+      }
+      if (!text.trim()) text = S.live;
+      cleanup();
+      const wait = 400 - (performance.now() - shownAt);
+      if (wait > 0) await new Promise((r) => setTimeout(r, wait));
+      if (!S.cancelled && S.alive) onDone(text.trim());
+    };
+
+    const loop = () => {
       const tick = (t: number) => {
-        if (!alive || finished.current) return;
-        const ms = performance.now() - parts.current.start;
+        if (!S.alive || S.finished) return;
+        const ms = performance.now() - S.start;
         setElapsed(ms);
         if (ms >= config.voiceNote.maxMs) { finish(false); return; }
         if (t - last > 80) {
           last = t;
-          const lv = mic.level();
-          setLevels((prev) => [...prev.slice(1), lv]);
+          let lv: number;
+          if (S.mic) lv = S.mic.level();
+          else {
+            // No level meter available: a gentle idle pulse, lifted by recognition activity.
+            S.pulse = Math.max(0, S.pulse - 0.06);
+            lv = 0.12 + 0.1 * (Math.sin(t / 180) + 1) / 2 + S.pulse;
+          }
+          setLevels((prev) => [...prev.slice(1), Math.min(1, lv)]);
         }
-        raf = requestAnimationFrame(tick);
+        S.raf = requestAnimationFrame(tick);
       };
-      raf = requestAnimationFrame(tick);
+      let last = 0;
+      S.raf = requestAnimationFrame(tick);
     };
 
-    const runTimer = () => {
-      const tick = () => {
-        if (!alive || finished.current) return;
-        const ms = performance.now() - parts.current.start;
-        setElapsed(ms);
-        if (ms >= config.voiceNote.maxMs) { finish(false); return; }
-        raf = requestAnimationFrame(tick);
-      };
-      raf = requestAnimationFrame(tick);
-    };
+    api.current = { finish };
 
-    (async () => {
-      parts.current.start = performance.now();
-
+    // Defer one tick so StrictMode's throwaway mount never starts the mic or recognition.
+    startTimer = window.setTimeout(async () => {
+      S.start = performance.now();
+      loop();
+      try {
+        S.mic = await openMic(); // mic first, so the level meter works
+        if (!S.alive) { S.mic.close(); return; }
+      } catch (e) {
+        if (e instanceof MicDeniedError) { S.finished = true; onDenied(); return; }
+        // otherwise carry on without a meter
+      }
       if (serverMode) {
-        // Server STT: capture audio with MediaRecorder and show the mic level.
+        if (!S.mic) { S.finished = true; onDone(null); return; }
         try {
-          const mic = await openMic();
-          if (!alive) { mic.close(); return; }
-          parts.current.mic = mic;
-          const media = new MediaRecorder(mic.stream);
-          media.ondataavailable = (e) => e.data.size && parts.current.chunks.push(e.data);
+          const media = new MediaRecorder(S.mic.stream);
+          media.ondataavailable = (e) => e.data.size && S.chunks.push(e.data);
           media.start();
-          parts.current.media = media;
-          runLevels(mic);
-        } catch (e) {
-          finished.current = true;
-          if (e instanceof MicDeniedError) onDenied();
-          else onDone(null);
-        }
+          S.media = media;
+        } catch { S.finished = true; cleanup(); onDone(null); }
         return;
       }
-
-      // Browser STT: start recognition FIRST so it claims the mic cleanly; the
-      // level meter is a best-effort second mic (some browsers refuse a 2nd one).
       const rec = createRecognizer({
-        onUpdate: (text) => { liveRef.current = text; setLive(text); },
+        onUpdate: (text) => { S.live = text; S.pulse = 0.5; },
         onError: (code) => {
-          if (code === 'denied') { finished.current = true; cleanup(); onDenied(); }
-          // Other errors (no-speech, network, audio-capture): keep going; the
-          // live text or an empty result is handled on finish().
+          if (code === 'denied') { S.finished = true; cleanup(); onDenied(); }
+          // other errors keep recording; finish() handles an empty result
         },
       });
-      try {
-        rec.start();
-      } catch {
-        finished.current = true;
-        onDone(null);
-        return;
-      }
-      parts.current.rec = rec;
+      S.rec = rec;
+      try { rec.start(); } catch { S.finished = true; cleanup(); onDone(null); }
+    }, 0);
 
-      try {
-        const mic = await openMic();
-        if (!alive) { mic.close(); return; }
-        parts.current.mic = mic;
-        runLevels(mic);
-      } catch {
-        // No level meter (mic busy with recognition); recognition still runs.
-        runTimer();
-      }
-    })();
-
-    return () => { alive = false; cancelAnimationFrame(raf); if (!finished.current) { finished.current = true; cleanup(); } };
+    return () => {
+      S.alive = false;
+      clearTimeout(startTimer);
+      cancelAnimationFrame(S.raf);
+      if (api.current?.finish === finish) api.current = null;
+      if (!S.finished) { S.finished = true; cleanup(); }
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -163,7 +149,7 @@ export function Recorder({ onDone, onDenied, accent = 'teal' }: Props) {
   return (
     <div className="recorder">
       <div className="rec-pill">
-        <button className="icon24" onClick={() => finish(true)} aria-label="Discard recording">
+        <button className="icon24" onClick={() => api.current?.finish(true)} aria-label="Discard recording">
           <img src="/assets/trash.svg" width={24} height={24} alt="" />
         </button>
         <div className="rec-mid">
@@ -172,8 +158,6 @@ export function Recorder({ onDone, onDenied, accent = 'teal' }: Props) {
             <span className="rec-busy" role="status" aria-label="Transcribing">
               <img className="spin" src="/assets/spinner.svg" width={24} height={24} alt="" />
             </span>
-          ) : live ? (
-            <span className="rec-live" aria-live="polite">{live}</span>
           ) : (
             <svg className="rec-wave" viewBox="0 0 200 24" aria-hidden>
               {levels.map((lv, i) => {
@@ -184,7 +168,7 @@ export function Recorder({ onDone, onDenied, accent = 'teal' }: Props) {
             </svg>
           )}
         </div>
-        <button className="rec-ok" style={{ background: color }} onClick={() => finish(false)} disabled={busy} aria-label="Stop and transcribe">
+        <button className="rec-ok" style={{ background: color }} onClick={() => api.current?.finish(false)} disabled={busy} aria-label="Stop and transcribe">
           <img src="/assets/check.svg" width={18} height={20} alt="" />
         </button>
       </div>
