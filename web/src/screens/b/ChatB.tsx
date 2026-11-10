@@ -54,7 +54,7 @@ export function ChatB({ c }: { c: ChatModel }) {
             )}
           </div>
           {!typing && (
-            <button className="bc-speak" onClick={() => c.openRecorder('speak')} disabled={!c.online} aria-label="Record a voice note">
+            <button className="bc-speak" onClick={c.openVoiceMode} disabled={!c.online} aria-label="Speak with Wysa">
               <img src="/assets/b/waveform.svg" width={31} height={34} alt="" />Speak
               {c.voiceTip === 'speak' && <span className="tooltip" role="status">Voice isn't supported in this browser.</span>}
             </button>

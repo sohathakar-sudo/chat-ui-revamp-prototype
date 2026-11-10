@@ -61,7 +61,7 @@ Labels and entry points differ by variant (A / B) where noted.
 - Chat thread back arrow → Home, played with the loader-to-home transition.
 - Home → Chat → Chat thread.
 - Home → Speak or tap on the orb → Voice mode.
-- Chat thread composer Speak pill (A only) → Voice mode (Ready).
+- Chat thread composer Speak pill → Voice mode (both variants; Variant B opens straight into Listening, like entering from Home).
 - Voice mode Type → Chat thread.
 - Voice mode X → Home.
 - Voice mode gear (A) / Wysa's Voice pill (B) → Choose a Voice → Voice mode (Ready).
@@ -83,10 +83,10 @@ Labels and entry points differ by variant (A / B) where noted.
 - Wysa replies stream in progressively, with a typing indicator shown before the first text arrives.
 - Header right icon shows a placeholder tooltip anchored to the icon (text per variant, sections 13 and 14).
 - Composer (controls per variant, sections 13 and 14):
-  - Voice-note entry opens the voice-note recorder (section 7): the mic button (A) / the Speak pill (B).
-  - Voice-mode entry from chat exists only in Variant A (the Speak pill).
+  - The Speak pill opens full voice mode (both variants).
+  - Voice-note entry opens the voice-note recorder (section 7): the mic button, Variant A only. Variant B has no voice-note entry in chat.
   - Empty input: no send button. Whitespace-only input counts as empty.
-  - Non-empty input: a send button appears in place of the voice-note entry. Enter sends; Shift+Enter adds a new line.
+  - Non-empty input: a send button appears (A: in place of the mic; B: the composer expands and the Speak pill hides). Enter sends; Shift+Enter adds a new line.
   - The input grows with the text up to about 6 lines, then scrolls internally.
   - After sending, the input clears and the user message appears immediately.
 
@@ -194,13 +194,13 @@ Labels and entry points differ by variant (A / B) where noted.
   - Header: back arrow (left) and history (clock) icon (right). Tooltip text: "Your past conversations will be accessible from here."
   - Wysa messages: plain text with a speaker icon and "Read aloud" label below.
   - User messages: wide light-cyan rounded cards spanning the message column.
-  - Composer, empty (Chat/Active): white pill input "Send a message" with a white "Speak" pill (orange waveform icon and label, per Figma) that opens the voice-note recorder.
+  - Composer, empty (Chat/Active): white pill input "Send a message" with a white "Speak" pill (orange waveform icon and label, per Figma) that opens voice mode.
   - Composer, typing (Chat/Typing):
     - the composer expands into a multi-line rounded card holding the typed text
     - an orange circular send button sits at its bottom-right
     - the Speak pill is hidden
     - the background shows the warm/cool gradient glow at the bottom
-  - Recorder: same layout as Variant A, restyled with Variant B's orange accent (no Figma frame exists for it).
+  - Recorder: not reachable in Variant B, since its chat has no voice-note entry. An orange-accented version exists in code in case one is added.
 - **Voice mode:**
   - Header: X (top-left), "Wysa's Voice" pill with a smiley-speech icon (top-right).
   - Ready (Voice/Landing):
@@ -281,7 +281,7 @@ Labels and entry points differ by variant (A / B) where noted.
 
 Decided:
 
-1. **Variant A chat Speak pill opens full voice mode** and the mic records voice notes (confirmed by product, 10 Nov 2026). "Entering full voice mode from the Chat thread" is no longer out of scope, for Variant A.
+1. **The chat Speak pill opens full voice mode in both variants** (confirmed by product, 10 Nov 2026). In Variant A the mic records voice notes; Variant B has no voice-note entry in chat. "Entering full voice mode from the Chat thread" is no longer out of scope.
 2. **Variant A Ready hides Type/Mute** although the Voice/Landing frame shows them. The behavior rule wins.
 3. **Variant A Reconnecting** uses the Figma frame's plain ring. Earlier drafts described four static dots. It shows no message text, although the frame shows a transcript line.
 4. **Variant A Ready orb entry animation** ends at the static frame's size. The Figma motion data scales the core to 2×, which doesn't match the frame.
@@ -290,11 +290,10 @@ Open:
 
 1. **Loader code layer** (`269-1307`): the source must be exported by design before it can be reused (section 1). Until then the loader is an approximation.
 2. **Transition frames** (page `146-748`): frame-level links are needed to read them.
-3. **Variant B voice-mode entry from chat:** B's composer has only a Speak pill, which opens the voice-note recorder. Confirm B should have no voice-mode entry from chat, or whether it needs a separate mic control like A.
-4. **No-frame states needing design review:**
+3. **No-frame states needing design review:**
    - Shared: typing indicator, "Something went wrong · Retry", "You're offline" banner, header tooltips, message playing state, inline mic-denied and "Couldn't catch that" messages.
    - Variant A: Thinking and Paused orbs, Mute active state.
-   - Variant B: recorder and Reconnecting.
+   - Variant B: Thinking, Reconnecting and the "Tap to start" timeout.
 
 ## Prototype review aids (dev builds only)
 

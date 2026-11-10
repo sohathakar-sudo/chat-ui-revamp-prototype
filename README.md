@@ -86,13 +86,13 @@ Places where the build had to go beyond, or choose between, the Figma file and t
 2. **Idle orb animation.** Figma's motion data scales the inner core to 2×, which doesn't match the static Idle frame. The animation ends at the static frame's size.
 3. **Idle controls.** The Figma Idle frame shows Type/Mute. The PRD says no controls in Idle, so they're hidden.
 4. **Reconnecting.** The PRD describes four static dots and no message text. The Figma frame now shows a plain ring plus text. The build uses Figma's ring and the PRD's no-text rule.
-5. **Chat composer buttons.** The updated composer has a "Speak" pill and a mic button. The placeholder ("tap the mic to dictate") points the mic at voice notes, so the Speak pill opens full voice mode. Confirmed by product (10 Nov 2026); the PRD is updated to match.
+5. **Chat composer buttons.** In both variants the chat "Speak" pill opens full voice mode (confirmed by product, 10 Nov 2026). Variant A's mic records voice notes ("tap the mic to dictate"); Variant B has no voice-note entry in chat.
 6. **No Figma frame, built from existing styles:** typing indicator, Thinking and Paused orbs, Mute active state, "Something went wrong · Retry", "You're offline" banner, progress and "voice not supported" tooltips, speaker playing state, mic-denied and "Couldn't catch that" messages.
 7. **Listening ring.** `listen-ring.svg` is Figma's listening graphic with the bars removed, so the bars can move with the mic level.
 8. **Fonts.** The composer uses Google Sans Flex (loaded from Google Fonts). SF Pro is used where the device has it (Apple devices). Elsewhere it falls back to the system font, so text metrics can differ slightly.
 9. **B Speak pill style.** The PRD says "orange-outlined"; the Figma frame shows a white pill with orange text and icon. The build follows Figma. The same goes for the active Pause button (orange icon and label, no outline).
 10. **B glow animations.** Figma's motion data slides each glow 250px in over 200ms and loops it every 2s. A looping jump looked broken, so the slide plays once each time a state is entered. The orb spins follow the motion data (a half-turn every 2s).
 11. **B Listening orb** pulses slightly with mic level, on top of its Figma spin, so users can see the mic is live.
-12. **B states with no frame:** Thinking (pulsing Listening orb), Reconnecting and "Couldn't connect" (static Listening orb with the error caption), the "Tap to start" timeout, the orange recorder, typing dots, the retry line and tooltips.
+12. **B states with no frame:** Thinking (pulsing Listening orb), Reconnecting and "Couldn't connect" (static Listening orb with the error caption), the "Tap to start" timeout, typing dots, the retry line and tooltips.
 13. **B Ready.** The mic opens straight away when voice mode is entered from Home. Returning from Choose a Voice, or switching variant into voice mode, lands on "Start Speaking" and waits for a tap, because browsers need a tap before they play audio.
-14. **B Speak in chat** opens the voice-note recorder (B has no voice-mode entry from chat; open question in the PRD).
+14. **B Speak in chat** opens voice mode straight into Listening, like Speak on Home. The orange voice-note recorder stays in code but isn't reachable in B.
