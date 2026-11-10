@@ -192,8 +192,8 @@ Labels and entry points differ by variant (A / B) where noted.
   - the orb is tappable → Voice mode
 - **Chat thread:**
   - Header: back arrow (left) and history (clock) icon (right). Tooltip text: "Your past conversations will be accessible from here."
-  - Wysa messages: plain text with a speaker icon and "Read aloud" label below.
-  - User messages: wide light-cyan rounded cards spanning the message column.
+  - Wysa messages: plain text with a speaker icon and "Read aloud" label below. While playing, the control pulses (no color change).
+  - User messages: light-cyan rounded bubbles that hug their text (16px padding, text up to 275px wide; spacing per `541-11791`).
   - Composer, empty (Chat/Active): white pill input "Send a message" with a white "Speak" pill (orange waveform icon and label, per Figma) that opens voice mode.
   - Composer, typing (Chat/Typing):
     - the composer expands into a multi-line rounded card holding the typed text
@@ -205,13 +205,13 @@ Labels and entry points differ by variant (A / B) where noted.
   - Header: X (top-left), "Wysa's Voice" pill with a smiley-speech icon (top-right).
   - Ready (Voice/Landing):
     - "Start Speaking" title centered, with a large pastel orb below; Type and Pause visible
-    - the mic opens immediately on entering voice mode (the Speak/orb tap is the user gesture that unlocks browser audio)
-    - so Ready shows only until the mic is live, then → Listening with the same layout
+    - Ready stays until the user taps anywhere (except the header and controls); that tap opens the mic and unlocks audio
+    - Ready → Listening: the large orb shrinks and glides down into the small Listening orb's place, "Start Speaking" blurs out, and the transcript and caption fade in
   - Transcript area (top, below header): shows only the latest exchange.
     - Wysa's latest line is left-aligned in dark text; the user's reply is right-aligned in grey beneath it.
     - When a new Wysa reply starts, the area clears and shows only that reply, then the user's next turn appears beneath it.
-  - Listening: small cyan orb near the bottom, caption "Listening" under it, cool cyan glow at the bottom of the screen.
-  - Wysa Speaking: small yellow orb, caption "Wysa Speaking", warm yellow glow at the top of the screen. Synced reveal applies to Wysa's line in the transcript area.
+  - Listening: small cyan orb near the bottom, caption "Listening" under it, cool cyan glow at the bottom of the screen. The bottom glow rises and swells with the user's voice (mic level) and settles back when they stop.
+  - Wysa Speaking: small yellow orb, caption "Wysa Speaking", warm yellow glow at the top of the screen. The top glow moves while Wysa speaks and settles when she stops. Synced reveal applies to Wysa's line in the transcript area.
   - Paused: the transcript stays visible, the orb is hidden, caption "Paused", and the Pause button shows an orange icon and orange label (per Figma; no outline).
   - Reconnecting (no frame): the Variant B layout with a static small orb, the transcript unchanged, and the caption with spinner and "Reconnecting" in coral red.
   - Bottom controls: Type (keyboard icon) bottom-left and Pause (pause icon) bottom-right, as white pills with labels.
@@ -231,7 +231,7 @@ Timings live in one place (`web/src/lib/transitions.ts`). Durations not given be
   - Speak pill press: the same orange glow and 0.2s delay.
   - The hero expands to fill the screen as its content fades, leaving a blank screen.
   - Voice's top bar, bottom bar and both glows come in; "Start Speaking" blurs in (about 1s from the start); the orb scales up and settles.
-  - The mic opens once the animation ends.
+  - Ready then waits for a tap before the mic opens.
 - **Chat → Voice:** swoosh left to right to a blank cream screen. The bars swap from Chat's to Voice's while the glows come in from the top and bottom; then "Start Speaking" blurs in and the orb settles.
 - **Voice → Chat** (X or Type): swoosh left to right. The orb shrinks and disappears; the bars swap from Voice's to Chat's; the thread fades in.
 - **Chat → Home** (back): swoosh right to left. The hero pops back up from below and the "For your day" feed and bottom nav slide up with it.

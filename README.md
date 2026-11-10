@@ -94,9 +94,9 @@ Places where the build had to go beyond, or choose between, the Figma file and t
 8. **Fonts.** The composer uses Google Sans Flex (loaded from Google Fonts). SF Pro is used where the device has it (Apple devices). Elsewhere it falls back to the system font, so text metrics can differ slightly.
 9. **B Speak pill style.** The PRD says "orange-outlined"; the Figma frame shows a white pill with orange text and icon. The build follows Figma. The same goes for the active Pause button (orange icon and label, no outline).
 10. **B glow animations.** Figma's motion data slides each glow 250px in over 200ms and loops it every 2s. A looping jump looked broken, so the slide plays once each time a state is entered. The orb spins follow the motion data (a half-turn every 2s).
-11. **B Listening orb** pulses slightly with mic level, on top of its Figma spin, so users can see the mic is live.
+11. **B live motion.** The Listening orb pulses with mic level on top of its Figma spin. The bottom glow rises with the user's voice and the top glow moves while Wysa speaks. Browser voices don't expose audio levels, so Wysa's glow is paced by her spoken words.
 12. **B states with no frame:** Thinking (pulsing Listening orb), Reconnecting and "Couldn't connect" (static Listening orb with the error caption), the "Tap to start" timeout, typing dots, the retry line and tooltips.
-13. **B Ready.** The mic opens straight away when voice mode is entered from Home. Returning from Choose a Voice, or switching variant into voice mode, lands on "Start Speaking" and waits for a tap, because browsers need a tap before they play audio.
+13. **B Ready.** "Start Speaking" stays until the user taps; the tap opens the mic, and the orb glides down into the Listening position.
 14. **B Speak in chat** opens voice mode straight into Listening, like Speak on Home. The orange voice-note recorder stays in code but isn't reachable in B.
 15. **B voice X → Chat.** Closing voice mode in B lands on the Chat thread, which shows the whole voice conversation; Chat's back arrow then goes Home. Variant A's X still goes Home.
 16. **B Pause on Ready.** Pause is shown on the Start Speaking screen (per Figma), so it works there too: it cancels a mic that is still opening and holds in Paused until tapped again.
