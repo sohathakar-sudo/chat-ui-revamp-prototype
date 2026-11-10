@@ -20,11 +20,10 @@ Without an API key, Wysa answers from a small set of canned placeholder replies,
 
 ### Variants
 
-- **Desktop:** the "Variants" button at the bottom-right, outside the phone frame, opens the prototype controls.
-- **Mobile:** triple-tap the status bar.
-- Switching keeps the conversation, the selected voice and the current screen. A voice turn in progress pauses and stays paused in the new variant.
-- Share a variant directly with `?variant=B` (or `?variant=A`). Default is A.
-- Add a variant or a control in `prototype` in `shared/config.ts`; the modal lists whatever is there.
+- The app opens on a **"Choose a Variant"** divergence screen. Pick A or B and tap Continue to enter the prototype in that variant.
+- To re-diverge mid-session, triple-tap the status bar to reopen the chooser. The conversation and selected voice carry over.
+- Share a variant directly with `?variant=B` (or `?variant=A`): the link skips the chooser and opens that variant. Default is A.
+- Add a variant in `prototype.variants` in `shared/config.ts` (`label` + `tagline`); the chooser lists whatever is there.
 
 ### Design review shortcuts (dev only)
 

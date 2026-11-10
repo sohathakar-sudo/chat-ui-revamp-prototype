@@ -534,13 +534,6 @@ p { margin: 0; }
 /* ======================================================================
    Prototype controls (variant switcher): neutral, not part of either design
    ====================================================================== */
-.pc-open {
-  position: fixed; right: 20px; bottom: 20px; z-index: 90; display: flex; align-items: center; gap: 8px;
-  padding: 8px 12px; border-radius: 8px; background: #fff; border: 1px solid #d0d5dd; box-shadow: 0 2px 8px rgba(16, 24, 40, 0.08);
-  font: 500 13px/1 system-ui, -apple-system, sans-serif; color: #101828;
-}
-.pc-open span { padding: 2px 6px; border-radius: 4px; background: #101828; color: #fff; font-size: 11px; }
-@media (max-width: 500px) { .pc-open { display: none; } }
 .pc-overlay { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 16px; background: rgba(16, 24, 40, 0.45); }
 .pc-panel {
   width: min(380px, 100%); padding: 20px; border-radius: 12px; background: #fff; outline: 0;
@@ -760,3 +753,25 @@ p { margin: 0; }
 .tr-A.tr-exit.tr-voice-chat .v-ctrls { animation: a-sink 300ms var(--ease-in) forwards; }
 .tr-A.tr-enter.tr-voice-chat .composer { animation: a-rise 400ms var(--ease-out) 100ms both; }
 .tr-A.tr-enter.tr-voice-chat .thread { animation: fade-in 450ms ease 150ms both; }
+
+/* ======================================================================
+   Choose a Variant (divergence homescreen)
+   ====================================================================== */
+.chooser { background: var(--bg); }
+.chooser-body { position: absolute; top: 47px; left: 0; right: 0; bottom: 0; padding: 24px; display: flex; flex-direction: column; align-items: center; }
+.chooser-body h1 { margin: 110px 0 0; font-family: var(--sf-display); font-weight: 700; font-size: 30px; line-height: 1.2; letter-spacing: -0.3px; color: var(--navy); text-align: center; }
+.ch-cards { margin-top: 56px; width: 100%; max-width: 340px; display: flex; flex-direction: column; gap: 32px; }
+.ch-card {
+  width: 100%; min-height: 128px; padding: 24px; border-radius: 20px; border: 1px solid transparent;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; text-align: center;
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 120ms ease;
+}
+.ch-card:active { transform: scale(0.99); }
+.ch-card .ch-name { font-family: var(--sf-display); font-weight: 500; font-size: 24px; line-height: 1.2; color: var(--navy); }
+.ch-card .ch-tag { font-size: 18px; line-height: 1.4; color: var(--sub); }
+/* A: calm blue, a soft teal bloom in the top-right. */
+.ch-A { background: radial-gradient(120% 120% at 82% 18%, #c7eff4 0%, #e6fbff 52%, #eafcff 100%); }
+/* B: neutral, contemplative — cool on the left fading to warm yellow on the right. */
+.ch-B { background: linear-gradient(100deg, #e4f8f6 0%, #fbfbf1 46%, #f7e7a6 100%); }
+.ch-card.sel { border-color: #c9ccd8; box-shadow: 0 0 0 1px #c9ccd8, 0 6px 18px rgba(26, 26, 50, 0.08); }
+.chooser .continue { margin-top: auto; margin-bottom: 24px; }

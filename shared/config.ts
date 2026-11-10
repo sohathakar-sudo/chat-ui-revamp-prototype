@@ -104,8 +104,8 @@ export const config = {
 export const prototype = {
   defaultVariant: 'A' as 'A' | 'B',
   variants: [
-    { id: 'A' as const, label: 'Variant A', description: 'Iteration 1: white and teal, glowing orb' },
-    { id: 'B' as const, label: 'Variant B', description: 'Iteration 2: pastel gradients, orange accent' },
+    { id: 'A' as const, label: 'Variant A', tagline: 'Calm blue', description: 'Iteration 1: white and teal, glowing orb' },
+    { id: 'B' as const, label: 'Variant B', tagline: 'Neutral, Contemplative', description: 'Iteration 2: pastel gradients, orange accent' },
   ],
   controls: [
     { id: 'variant' as const, label: 'Design variant' },

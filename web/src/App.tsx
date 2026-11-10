@@ -5,12 +5,11 @@ import { Home } from './screens/Home';
 import { Chat } from './screens/Chat';
 import { Voice } from './screens/Voice';
 import { ChooseVoice } from './screens/ChooseVoice';
-import { VariantSwitcher, openSwitcher } from './components/VariantSwitcher';
+import { ChooseVariant } from './screens/ChooseVariant';
 import { SWOOSH_MS, transClass } from './lib/transitions';
 
 export function App() {
   const screen = useStore((s) => s.screen);
-  const variant = useStore((s) => s.variant);
   const trans = useStore((s) => s.trans);
   const swoosh = trans?.swoosh && trans.stage !== 'press' ? trans.swoosh : null;
   // Variant A Chat → Voice: the Speak pill's glow blooms into a full-screen gradient across the swap.
@@ -32,6 +31,7 @@ export function App() {
       <div className="device">
         <div className="screen">
           <div className={`scr-wrap ${transClass(trans)}`}>
+            {screen === 'pick' && <ChooseVariant />}
             {screen === 'loader' && <Loader />}
             {screen === 'home' && <Home />}
             {screen === 'chat' && <Chat />}
@@ -47,10 +47,6 @@ export function App() {
           )}
         </div>
       </div>
-      <button className="pc-open" onClick={openSwitcher} aria-label="Open prototype controls">
-        Variants <span>{variant}</span>
-      </button>
-      <VariantSwitcher />
     </div>
   );
 }

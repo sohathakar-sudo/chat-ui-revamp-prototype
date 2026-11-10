@@ -2,7 +2,7 @@ import { useSyncExternalStore } from 'react';
 import { config, prototype, type VoiceName } from '../../../shared/config';
 import type { Trans } from './transitions';
 
-export type Screen = 'loader' | 'chat' | 'home' | 'voice' | 'voices';
+export type Screen = 'pick' | 'loader' | 'chat' | 'home' | 'voice' | 'voices';
 export type Variant = (typeof prototype.variants)[number]['id'];
 
 export type Message = {
@@ -25,7 +25,6 @@ export type State = {
   status: { llm: string; stt: 'browser' | 'server'; tts: 'browser' | 'server' };
   /** Design variant (A/B). Session only; a link can preselect it with ?variant=B. */
   variant: Variant;
-  switcherOpen: boolean;
   /** Running Variant B screen transition, if any. */
   trans: Trans | null;
 };
@@ -41,12 +40,21 @@ const devScreen = import.meta.env.DEV && typeof location !== 'undefined'
 const linkVariant = typeof location !== 'undefined'
   ? (new URLSearchParams(location.search).get('variant') || '').toUpperCase()
   : '';
-const initialVariant: Variant = prototype.variants.some((v) => v.id === linkVariant)
-  ? (linkVariant as Variant)
-  : prototype.defaultVariant;
+const linkVariantValid = prototype.variants.some((v) => v.id === linkVariant);
+const initialVariant: Variant = linkVariantValid ? (linkVariant as Variant) : prototype.defaultVariant;
+
+// Entry point: dev ?screen=/?state= shortcuts and a ?variant= link skip the chooser;
+// otherwise the app opens on "Choose a Variant".
+const startScreen: Screen = devScreen
+  ? devScreen
+  : import.meta.env.DEV && typeof location !== 'undefined' && location.search.includes('state=')
+    ? 'voice'
+    : linkVariantValid
+      ? 'loader'
+      : 'pick';
 
 let state: State = {
-  screen: devScreen || (import.meta.env.DEV && typeof location !== 'undefined' && location.search.includes('state=') ? 'voice' : 'loader'),
+  screen: startScreen,
   homeTransition: false,
   messages: [{ id: newId(), role: 'assistant', text: config.greeting, status: 'done' }],
   voice: config.defaultVoice,
@@ -54,7 +62,6 @@ let state: State = {
   online: typeof navigator === 'undefined' ? true : navigator.onLine,
   status: { llm: 'placeholder', stt: 'browser', tts: 'browser' },
   variant: initialVariant,
-  switcherOpen: false,
   trans: null,
 };
 
