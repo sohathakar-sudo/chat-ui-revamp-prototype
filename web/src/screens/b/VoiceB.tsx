@@ -1,6 +1,7 @@
 // Variant B voice mode (Figma 531:9276 Landing, 531:9326 Speaking, 531:9367 Listening, 531:10040 Paused).
 // Thinking, Reconnecting and the "Tap to start" timeout have no frame: built from these frames' parts.
 // X goes to the Chat thread (which shows the whole voice conversation); Chat's back arrow then goes Home.
+import { DuoOrb } from '../../components/DuoOrb';
 import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { useStore } from '../../lib/store';
 import { splitWords } from '../../lib/speech';
@@ -8,7 +9,7 @@ import type { Phase, VoiceModel } from '../../lib/useVoice';
 import { StatusBar } from '../../components/StatusBar';
 
 export function VoiceB({ v }: { v: VoiceModel }) {
-  const { phase, idleReason, caption, transcript, replyText, spokenWords, barEls, micLevel, onScreenTap, toggleMute, leave } = v;
+  const { phase, idleReason, caption, transcript, replyText, spokenWords, micLevel, onScreenTap, toggleMute, leave } = v;
   const messages = useStore((s) => s.messages);
   const ready = phase === 'idle' && idleReason === 'initial';
 
@@ -147,8 +148,7 @@ export function VoiceB({ v }: { v: VoiceModel }) {
           <div className="vb-start">
             <p className="vb-start-title" ref={titleRef}>Start Speaking</p>
             <div className="vb-landing-orb" ref={landingOrbRef}>
-              <span className="lo-a"><span><img src="/assets/b/landing-orb-a.svg" alt="" /></span></span>
-              <span className="lo-b"><span className="spin-b"><img src="/assets/b/landing-orb-b.svg" alt="" /></span></span>
+              <DuoOrb tone="cycle" />
             </div>
             <p className="vb-caption" role="status" aria-live="polite" />
           </div>
@@ -167,7 +167,7 @@ export function VoiceB({ v }: { v: VoiceModel }) {
               {userLine && <p className="vb-user">{userLine}</p>}
             </div>
             <div className="vb-orb-block">
-              <OrbB phase={phase} barEls={barEls} boxRef={smallOrbRef} arriving={!!flight} />
+              <OrbB phase={phase} boxRef={smallOrbRef} arriving={!!flight} />
               <p className={`vb-caption${caption?.err ? ' err' : ''}`} role="status" aria-live="polite">
                 {caption?.spin && <img className="spin" src="/assets/spinner.svg" alt="" />}
                 {caption?.text}
@@ -183,8 +183,7 @@ export function VoiceB({ v }: { v: VoiceModel }) {
             style={{ left: flight.title.x, top: flight.title.y, width: flight.title.w, height: flight.title.h }}>Start Speaking</p>
           <div className="vb-landing-orb vb-flight" ref={flightOrbRef}
             style={{ left: flight.orb.x, top: flight.orb.y, width: flight.orb.w, height: flight.orb.h }}>
-            <span className="lo-a"><span><img src="/assets/b/landing-orb-a.svg" alt="" /></span></span>
-            <span className="lo-b"><span className="spin-b"><img src="/assets/b/landing-orb-b.svg" alt="" /></span></span>
+            <DuoOrb tone="cycle" />
           </div>
         </>
       )}
@@ -204,21 +203,13 @@ export function VoiceB({ v }: { v: VoiceModel }) {
 
 type Box = { x: number; y: number; w: number; h: number };
 
-function OrbB({ phase, barEls, boxRef, arriving }: {
-  phase: Phase; barEls: VoiceModel['barEls']; boxRef: RefObject<HTMLDivElement>; arriving: boolean;
+function OrbB({ phase, boxRef, arriving }: {
+  phase: Phase; boxRef: RefObject<HTMLDivElement>; arriving: boolean;
 }) {
-  if (phase === 'speaking') {
-    return <div className="vb-orb" ref={boxRef}><img src="/assets/b/speak-orb.svg" width={100} height={100} alt="" /></div>;
-  }
-  const live = phase === 'listening';
+  // Listening and Speaking share one orb: two same-coloured circles drifting slowly, no size change.
   return (
     <div ref={boxRef} className={`vb-orb${phase === 'paused' ? ' hidden' : ''}${phase === 'thinking' ? ' pulse' : ''}${arriving ? ' arriving' : ''}`}>
-      <div className="lo-level" data-level="scale" ref={live ? (el) => { barEls.current = [el]; } : undefined}>
-        <div className="lo-rot">
-          <span className="li-a"><span className={live ? 'spin-b' : ''}><img src="/assets/b/listen-orb-a.svg" alt="" /></span></span>
-          <span className="li-b"><span className={live ? 'spin-b' : ''}><img src="/assets/b/listen-orb-b.svg" alt="" /></span></span>
-        </div>
-      </div>
+      <DuoOrb tone={phase === 'speaking' ? 'speak' : 'listen'} />
     </div>
   );
 }

@@ -2,6 +2,7 @@
 import { config } from '../../../../shared/config';
 import { store, useStore } from '../../lib/store';
 import { HomeStatusBar } from '../../components/StatusBar';
+import { DuoOrb } from '../../components/DuoOrb';
 import type { HomeProps } from '../a/HomeA';
 
 export function HomeB({ startVoice, tip }: HomeProps) {
@@ -23,8 +24,7 @@ export function HomeB({ startVoice, tip }: HomeProps) {
           <div className="hb-center">
             <div className="orb-btn hb-orb-wrap">
               <button className="hb-orb" onClick={() => startVoice()} aria-label="Talk to Wysa">
-                <span className="hb-orb-a"><span className="spin-b"><img src="/assets/b/home-orb-inner.png" alt="" /></span></span>
-                <span className="hb-orb-b"><span><img src="/assets/b/home-orb-outer.svg" alt="" /></span></span>
+                <DuoOrb tone="cycle" />
               </button>
               {tip && <div className="tooltip home-tip">Voice isn't supported in this browser.</div>}
             </div>
