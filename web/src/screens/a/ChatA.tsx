@@ -1,4 +1,4 @@
-import { useStore, type Message } from '../../lib/store';
+import type { Message } from '../../lib/store';
 import type { ChatModel } from '../../lib/useChat';
 import { useTypeIn } from '../../lib/useTypeIn';
 import { StatusBar } from '../../components/StatusBar';
@@ -10,9 +10,6 @@ const TYPE_START_MS = 650;
 
 export function ChatA({ c }: { c: ChatModel }) {
   const typeIn = useTypeIn(c.messages, TYPE_START_MS);
-  const trans = useStore((s) => s.trans);
-  // Chat → Voice: the Speak pill's blue glow traces around it before the screen swoosh.
-  const tracing = trans?.kind === 'chat-voice' && trans.stage === 'press';
   return (
     <div className="scr chat">
       <img className="chat-glow" src="/assets/chat-glow.svg" alt="" />
@@ -23,7 +20,7 @@ export function ChatA({ c }: { c: ChatModel }) {
           <button className="icon24" onClick={c.toggleHeaderTip} aria-label="Progress">
             <img src="/assets/progress-icon.svg" width={24} height={24} alt="" />
           </button>
-          {c.headerTip && <div className="tooltip" role="status">The updated progress tab will be accessible from here.</div>}
+          {c.headerTip && <div className="tooltip" role="status">This section is a work in progress.</div>}
         </div>
       </div>
       {!c.online && <div className="offline" role="status">You're offline</div>}
@@ -64,8 +61,7 @@ export function ChatA({ c }: { c: ChatModel }) {
               />
             </label>
             <div className="row">
-              <button className={`speak-pill${tracing ? ' tracing' : ''}`} onClick={c.openVoiceMode} disabled={!c.online} aria-label="Speak with Wysa">
-                {tracing && <span className="trace" aria-hidden />}
+              <button className={`speak-pill`} onClick={c.openVoiceMode} disabled={!c.online} aria-label="Speak with Wysa">
                 <img src="/assets/composer-waveform.svg" width={20} height={20} alt="" />Speak
                 {c.voiceTip === 'speak' && <span className="tooltip" role="status">Voice isn't supported in this browser.</span>}
               </button>
