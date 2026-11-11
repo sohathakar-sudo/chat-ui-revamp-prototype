@@ -128,11 +128,12 @@ export function useVoice(variant: Variant) {
       recorder.start();
       media.current = { recorder, chunks };
     } else {
-      // Browser STT: the recognizer owns the single microphone. Start it FIRST and
-      // synchronously (inside the tap gesture) so Android Chrome grants it cleanly;
-      // the level meter is a best-effort second mic that must never block it. On
-      // Android the second getUserMedia is usually refused, and the bars then fall
-      // back to recognition activity (see the tick below).
+      // Browser STT: the recognizer owns the single microphone exclusively. We do
+      // NOT open a second getUserMedia for a level meter — on Android that second
+      // stream steals the mic from the recognizer, which then hears silence and
+      // returns an empty transcript. The waveform is driven by recognition activity
+      // instead (see the tick below). This branch stays synchronous so Android
+      // Chrome starts recognition inside the tap gesture.
       setReplyText(''); setSpokenWords(0); setPhase('listening');
       armTimers();
       const r = createRecognizer({
@@ -151,11 +152,6 @@ export function useVoice(variant: Variant) {
       });
       try { r.start(); } catch { /* already running */ }
       rec.current = r;
-      try {
-        const m = await openMic();
-        if (myTurn !== turnId.current) m.close();
-        else mic.current = m;
-      } catch { /* no meter: bars use recognition activity */ }
     }
 
     // Bars: real mic level when the meter is available, otherwise a gentle
