@@ -364,12 +364,13 @@ p { margin: 0; }
 /* ---------- B orb: two drifting circles (Figma 570:11805 assets, motion per reviewer brief) ----------
    Circles keep their size; they orbit slowly in opposite directions. Colours: #FEED9F yellow, #BEF5F1 blue. */
 @property --duo-c { syntax: '<color>'; inherits: false; initial-value: #feed9f; }
-.duo { position: absolute; inset: 0; display: block; --duo-a-size: 72%; --duo-b-size: 82%; }
+.duo { position: absolute; inset: 0; display: block; --duo-a-size: 72%; --duo-b-size: 82%; transform-origin: center; animation: duo-breathe 4s ease-in-out infinite alternate; }
+@keyframes duo-breathe { from { transform: scale(0.98); } to { transform: scale(1.04); } }
 /* Two circles of different sizes, both centred on the orb: the larger (blue, --duo-b) sits behind,
    the smaller (yellow, --duo-a) in front — the layered, two-lobe shape from Figma 570:11805. */
 .duo i {
   position: absolute; left: 50%; top: 50%; width: var(--s); aspect-ratio: 1; margin: calc(var(--s) / -2) 0 0 calc(var(--s) / -2);
-  border-radius: 50%; filter: blur(5px);
+  border-radius: 50%; filter: blur(5px); transform-origin: center;
   background: linear-gradient(var(--duo-ang, 195deg), rgba(255, 248, 238, 0.6) 0%, #fff 14%, var(--duo-c) 80%);
   animation: duo-cw 22s linear infinite;
 }
