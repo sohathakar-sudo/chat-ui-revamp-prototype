@@ -191,6 +191,21 @@ export function unlockAudio() {
   } catch { /* noop */ }
 }
 
+// Short UI blip that marks voice mode opening and closing.
+let indicator: HTMLAudioElement | null = null;
+let lastBlip = 0;
+export function playVoiceIndicator() {
+  if (typeof window === 'undefined') return;
+  const now = performance.now();
+  if (now - lastBlip < 250) return; // dedupe StrictMode double-mounts and rapid open/close
+  lastBlip = now;
+  try {
+    if (!indicator) { indicator = new Audio('/assets/voice-indicator.mp3'); indicator.volume = 0.5; }
+    indicator.currentTime = 0;
+    indicator.play().catch(() => {});
+  } catch { /* audio unavailable */ }
+}
+
 /** Spread word start times across a duration in proportion to word length. */
 function estimateWordStarts(words: string[], durationMs: number) {
   const weights = words.map((w) => w.length + 1);
