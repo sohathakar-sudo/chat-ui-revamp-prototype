@@ -511,17 +511,17 @@ p { margin: 0; }
 
 /* Ready ("Start Speaking") */
 .vb-start { flex: 1; min-height: 0; max-height: 596px; padding: 24px 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 36px; }
-.vb-start-title { font: 300 24px/normal var(--pjs); color: var(--b-ink); text-align: center; }
+.vb-start-title { font: 300 20px/normal var(--pjs); color: var(--b-ink); text-align: center; }
 .vb-start .vb-caption { display: none; }
 .vb-landing-orb { position: relative; width: 190px; height: 190px; flex-shrink: 0; overflow: hidden; }
 /* Transcript area: latest exchange only */
 .vb-transcript { flex: 1; min-height: 0; padding-bottom: 24px; display: flex; flex-direction: column; overflow-y: auto; scrollbar-width: none; }
-.vb-wysa { padding: 10px 0; width: 354px; max-width: 100%; font: 300 20px/1.26 var(--pjs); color: var(--b-ink); white-space: pre-wrap; }
+.vb-wysa { padding: 10px 0; width: 354px; max-width: 100%; font: 300 16px/1.26 var(--pjs); color: var(--b-ink); white-space: pre-wrap; }
 .vb-wysa .later { color: var(--placeholder); }
-.vb-user { padding: 10px 0; text-align: right; font: 400 20px/1.4 var(--pjs); color: rgba(38, 48, 59, 0.75); }
+.vb-user { padding: 10px 0; text-align: right; font: 400 16px/1.4 var(--pjs); color: rgba(38, 48, 59, 0.75); }
 
 .vb-orb-block { height: 178px; flex-shrink: 0; margin: 0 -24px; padding: 24px 0; display: flex; flex-direction: column; align-items: center; justify-content: space-between; }
-.vb-caption { min-height: 22px; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 0 24px; font: 400 16px/1.4 var(--pjs); color: rgba(38, 48, 59, 0.75); text-align: center; }
+.vb-caption { min-height: 22px; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 0 24px; font: 400 12px/1.4 var(--pjs); color: rgba(38, 48, 59, 0.75); text-align: center; }
 .vb-caption.err { color: var(--error); }
 .vb-caption .spin { width: 24px; height: 24px; animation: spin 0.9s linear infinite; }
 .vb-orb { position: relative; width: 100px; height: 100px; flex-shrink: 0; }
