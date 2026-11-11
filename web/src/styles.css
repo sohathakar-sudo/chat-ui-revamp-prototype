@@ -159,6 +159,8 @@ p { margin: 0; }
 .chat { overflow: hidden; }
 .chat-glow { position: absolute; left: calc(50% - 389px); bottom: -371px; width: 821px; height: 841px; transform: rotate(-90deg); pointer-events: none; z-index: 0; }
 .chat-head { position: relative; z-index: 3; height: 72px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 16px 0 15.996px; filter: drop-shadow(0 4px 2px rgba(0, 0, 0, 0.1)); }
+.chat-head { transition: transform 250ms ease, opacity 250ms ease, margin-top 250ms ease; }
+.chat-head.hidden { transform: translateY(-100%); opacity: 0; margin-top: -72px; pointer-events: none; }
 .icon24 { width: 24px; height: 24px; position: relative; display: block; }
 .back-icon .a { position: absolute; left: 20.83%; top: 20.83%; right: 50%; bottom: 20.83%; }
 .back-icon .a img { position: absolute; inset: -7.14% -14.29%; width: 128.58%; height: 114.28%; }
