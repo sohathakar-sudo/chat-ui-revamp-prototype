@@ -3,7 +3,12 @@ import type { ReplyProvider } from './types.ts';
 import { config } from '../../shared/config.ts';
 
 // Reads ANTHROPIC_API_KEY (or another configured Anthropic credential) on the server only.
-const client = new Anthropic();
+// An org-scoped key must name its workspace on every request; a workspace-scoped key does not.
+const client = new Anthropic(
+  process.env.ANTHROPIC_WORKSPACE_ID
+    ? { defaultHeaders: { 'anthropic-workspace-id': process.env.ANTHROPIC_WORKSPACE_ID } }
+    : undefined,
+);
 
 export const anthropicProvider: ReplyProvider = {
   name: 'anthropic',
