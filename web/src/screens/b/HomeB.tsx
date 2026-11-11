@@ -1,17 +1,14 @@
 // Variant B Home (Figma 531:9413).
 import { config } from '../../../../shared/config';
-import { store, useStore } from '../../lib/store';
+import { store } from '../../lib/store';
 import { HomeStatusBar } from '../../components/StatusBar';
 import { DuoOrb } from '../../components/DuoOrb';
 import type { HomeProps } from '../a/HomeA';
 
 export function HomeB({ startVoice, tip }: HomeProps) {
-  const trans = useStore((s) => s.trans);
-  // Keep the pressed pill's orange glow through the 0.2s press delay and the exit.
-  const pressed = trans && trans.stage !== 'enter' ? trans.source : undefined;
   return (
     <>
-      <div className="hb-hero">
+      <div className="hb-hero" onClick={() => startVoice()}>
         <img className="hb-hero-glow" src="/assets/b/home-hero-glow.svg" alt="" />
         <div className="hb-top">
           <HomeStatusBar />
@@ -23,7 +20,7 @@ export function HomeB({ startVoice, tip }: HomeProps) {
         <div className="hb-body">
           <div className="hb-center">
             <div className="orb-btn hb-orb-wrap">
-              <button className="hb-orb" onClick={() => startVoice()} aria-label="Talk to Wysa">
+              <button className="hb-orb" onClick={(e) => { e.stopPropagation(); startVoice(); }} aria-label="Talk to Wysa">
                 <DuoOrb tone="cycle" />
               </button>
               {tip && <div className="tooltip home-tip">Voice isn't supported in this browser.</div>}
@@ -34,8 +31,8 @@ export function HomeB({ startVoice, tip }: HomeProps) {
             </div>
           </div>
           <div className="hb-pills">
-            <button className={`hb-pill${pressed === 'chat' ? ' pressing' : ''}`} onClick={() => store.go('chat', 'chat')}>Chat</button>
-            <button className={`hb-pill speak${pressed === 'speak' ? ' pressing' : ''}`} onClick={() => startVoice('speak')}>Speak</button>
+            <button className="hb-pill" onClick={(e) => { e.stopPropagation(); store.go('chat', 'chat'); }}>Chat</button>
+            <button className="hb-pill speak" onClick={(e) => { e.stopPropagation(); startVoice('speak'); }}>Speak</button>
           </div>
         </div>
       </div>

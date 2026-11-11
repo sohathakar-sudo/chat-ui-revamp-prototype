@@ -34,8 +34,8 @@ const T: Record<Variant, Partial<Record<TransKind, Timeline>>> = {
     'voice-chat': { press: 0, exit: 450, enter: 700 },
   },
   B: {
-    'home-chat': { press: 200, exit: 450, enter: 900 },
-    'home-voice': { press: 200, exit: 550, enter: 1500 },
+    'home-chat': { press: 0, exit: 450, enter: 900 },
+    'home-voice': { press: 0, exit: 550, enter: 1500 },
     'chat-voice': { press: 0, exit: 300, enter: 1500, swoosh: 'ltr' },
     'voice-chat': { press: 0, exit: 300, enter: 700, swoosh: 'ltr' },
     'chat-home': { press: 0, exit: 300, enter: 900, swoosh: 'rtl' },
