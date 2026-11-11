@@ -146,7 +146,7 @@ export function VoiceB({ v }: { v: VoiceModel }) {
 
         {ready ? (
           <div className="vb-start">
-            <p className="vb-start-title" ref={titleRef}>Start Speaking</p>
+            <p className="vb-start-title" ref={titleRef}>Tap to start</p>
             <div className="vb-landing-orb" ref={landingOrbRef}>
               <DuoOrb tone="cycle" />
             </div>
@@ -180,7 +180,7 @@ export function VoiceB({ v }: { v: VoiceModel }) {
       {flight && (
         <>
           <p className="vb-start-title vb-flight" ref={flightTitleRef}
-            style={{ left: flight.title.x, top: flight.title.y, width: flight.title.w, height: flight.title.h }}>Start Speaking</p>
+            style={{ left: flight.title.x, top: flight.title.y, width: flight.title.w, height: flight.title.h }}>Tap to start</p>
           <div className="vb-landing-orb vb-flight" ref={flightOrbRef}
             style={{ left: flight.orb.x, top: flight.orb.y, width: flight.orb.w, height: flight.orb.h }}>
             <DuoOrb tone="cycle" />
