@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { config, type ChatTurn, type VoiceName } from '../shared/config.ts';
-import { getReplyProvider, getSpeakProvider, getTranscribeProvider } from './providers/index.ts';
+import { getFallbackReplyProvider, getReplyProvider, getSpeakProvider, getTranscribeProvider } from './providers/index.ts';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const distDir = path.resolve(here, '../web/dist');
@@ -59,15 +59,32 @@ async function handleReply(req: http.IncomingMessage, res: http.ServerResponse) 
   const timeout = setTimeout(() => controller.abort(), config.requestTimeoutMs * 4);
 
   res.writeHead(200, { 'content-type': 'application/x-ndjson', 'cache-control': 'no-cache' });
+  const primary = getReplyProvider();
+  let sent = 0;
   try {
-    for await (const text of getReplyProvider().reply(prepared, config.persona, controller.signal)) {
+    for await (const text of primary.reply(prepared, config.persona, controller.signal)) {
+      sent++;
       res.write(JSON.stringify({ t: text }) + '\n');
     }
     res.write(JSON.stringify({ done: true }) + '\n');
   } catch (err) {
-    if (!controller.signal.aborted) {
-      // Error type only; never the conversation content.
-      console.error('reply failed:', (err as Error)?.name ?? 'error');
+    if (controller.signal.aborted) { clearTimeout(timeout); res.end(); return; }
+    // Error type only; never the conversation content.
+    console.error('reply failed:', (err as Error)?.name ?? 'error');
+    const fallback = getFallbackReplyProvider();
+    // If nothing was streamed yet, fall back to the scripted dummy conversation so the
+    // prototype keeps talking instead of failing (e.g. a bad key or API hiccup).
+    if (sent === 0 && fallback !== primary) {
+      try {
+        console.error('falling back to scripted conversation');
+        for await (const text of fallback.reply(prepared, config.persona, controller.signal)) {
+          res.write(JSON.stringify({ t: text }) + '\n');
+        }
+        res.write(JSON.stringify({ done: true }) + '\n');
+      } catch {
+        if (!controller.signal.aborted) res.write(JSON.stringify({ error: 'reply_failed' }) + '\n');
+      }
+    } else {
       res.write(JSON.stringify({ error: 'reply_failed' }) + '\n');
     }
   } finally {

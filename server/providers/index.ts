@@ -14,6 +14,11 @@ export function getReplyProvider(): ReplyProvider {
   return placeholderProvider;
 }
 
+/** The scripted dummy conversation, used as the automatic fallback when a real reply fails. */
+export function getFallbackReplyProvider(): ReplyProvider {
+  return placeholderProvider;
+}
+
 // Server-side STT/TTS: fill these in once the team picks providers (see README).
 // Return null while unconfigured; the browser then uses its built-in engines.
 const transcribeProvider: TranscribeProvider | null = null;
