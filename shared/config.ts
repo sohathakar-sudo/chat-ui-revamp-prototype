@@ -24,6 +24,8 @@ export const config = {
     silenceMs: 1500,
     /** No speech at all within this window after the mic opens → back to Idle. */
     noSpeechTimeoutMs: 8000,
+    /** Variant A: auto-close voice mode after this long with no activity. */
+    inactivityMs: 15000,
     /** Auto-end a single user turn after this long. */
     maxTurnMs: 60_000,
     /** Characters of reply text to buffer before voice mode starts speaking. */

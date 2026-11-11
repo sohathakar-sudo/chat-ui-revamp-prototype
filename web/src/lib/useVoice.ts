@@ -43,7 +43,7 @@ export function useVoice(variant: Variant) {
   const mic = useRef<Mic | null>(null);
   const rec = useRef<Recognizer | null>(null);
   const media = useRef<{ recorder: MediaRecorder; chunks: Blob[] } | null>(null);
-  const timers = useRef<{ silence?: number; noSpeech?: number; maxTurn?: number; retry?: number; resume?: number }>({});
+  const timers = useRef<{ silence?: number; noSpeech?: number; maxTurn?: number; retry?: number; resume?: number; inactivity?: number }>({});
   const raf = useRef(0);
   const barEls = useRef<(HTMLElement | null)[]>([]);
   /** Last time recognition reported activity; drives the waveform when no level meter is available (Android). */
@@ -58,9 +58,21 @@ export function useVoice(variant: Variant) {
   // A farewell was spoken: after Wysa's closing line, return Home instead of listening again.
   const endingAfterReply = useRef(false);
   const leaveRef = useRef<(s: 'home' | 'chat' | 'voices') => void>(() => {});
+  /** Variant A mute: the session keeps running, only Wysa's voice (TTS) is silenced. */
+  const mutedRef = useRef(false);
+  const [muted, setMuted] = useState(false);
+  const variantRef = useRef(variant);
+  variantRef.current = variant;
 
   // ---------- teardown helpers ----------
   const clearTimer = (k: keyof typeof timers.current) => { window.clearTimeout(timers.current[k]); timers.current[k] = undefined; };
+
+  /** Variant A: close the session after a stretch of no activity (user silent and Wysa not replying). */
+  const bumpInactivity = () => {
+    if (variantRef.current !== 'A') return;
+    clearTimer('inactivity');
+    timers.current.inactivity = window.setTimeout(() => leaveRef.current('chat'), config.voice.inactivityMs);
+  };
 
   const stopListening = useCallback(() => {
     turnId.current++;
@@ -84,12 +96,14 @@ export function useVoice(variant: Variant) {
     stopSpeech();
     clearTimer('retry');
     clearTimer('resume');
+    clearTimer('inactivity');
     stopMessagePlayback();
   }, [stopListening, stopSpeech]);
 
   // ---------- listening ----------
   const startListening = useCallback(async () => {
     stopListening();
+    bumpInactivity();
     if (!navigator.onLine) { reconnectFor.current = 'offline'; setPhase('reconnecting'); return; }
     const myTurn = turnId.current;
     setTranscript({ text: '', partial: false });
@@ -100,6 +114,7 @@ export function useVoice(variant: Variant) {
     const end = () => endTurn(myTurn);
     const onSpeech = () => {
       heard = true;
+      bumpInactivity();
       clearTimer('noSpeech');
       clearTimer('silence');
       timers.current.silence = window.setTimeout(end, config.voice.silenceMs);
@@ -236,10 +251,10 @@ export function useVoice(variant: Variant) {
     if (p !== 'thinking' && p !== 'speaking') return;
     if (r.speech) return;
 
-    if (r.ttsFailed) {
+    if (r.ttsFailed || mutedRef.current) {
       // Show the reply as text; continue once it's complete.
       setSpokenWords(splitWords(r.text).length);
-      if (r.streamDone) { clearTimer('resume'); timers.current.resume = window.setTimeout(finishReply, 1200); }
+      if (r.streamDone) { clearTimer('resume'); timers.current.resume = window.setTimeout(finishReply, mutedRef.current ? 1800 : 1200); }
       return;
     }
 
@@ -271,7 +286,7 @@ export function useVoice(variant: Variant) {
     setSpokenWords(wordOffset);
 
     r.speech = speak(chunk, store.get().voice, {
-      onWord: (i) => { if (reply.current === r) setSpokenWords(wordOffset + i + 1); },
+      onWord: (i) => { if (reply.current === r) { setSpokenWords(wordOffset + i + 1); bumpInactivity(); } },
       onEnd: () => {
         if (reply.current !== r) return;
         r.speech = null;
@@ -288,6 +303,7 @@ export function useVoice(variant: Variant) {
 
   const beginReply = useCallback(() => {
     stopSpeech();
+    bumpInactivity();
     const r = freshReply();
     reply.current = r;
     heldReply.current = false;
@@ -371,11 +387,25 @@ export function useVoice(variant: Variant) {
     setPhase('paused');
   };
 
+  /** Variant A Mute: silence Wysa's voice only; the session keeps running. */
+  const toggleMuted = () => {
+    const next = !mutedRef.current;
+    mutedRef.current = next;
+    setMuted(next);
+    if (next) {
+      const speaking = !!reply.current.speech;
+      stopSpeech();
+      if (speaking) pump();
+    }
+    bumpInactivity();
+  };
+
   const onScreenTap = () => {
     const p = phaseRef.current;
     if (p === 'idle') {
       unlockAudio();
       setIdleReason('initial');
+      bumpInactivity();
       startListening();
     } else if (p === 'failed') {
       attempts.current = 0;
@@ -388,6 +418,8 @@ export function useVoice(variant: Variant) {
 
   const leave = (screen: 'home' | 'chat' | 'voices') => {
     stopAll();
+    mutedRef.current = false;
+    setMuted(false);
     phaseRef.current = 'idle';
     reply.current = freshReply();
     store.go(screen); // Variant B animates this (transitions.ts)
@@ -408,7 +440,9 @@ export function useVoice(variant: Variant) {
   useEffect(() => {
     if (import.meta.env.DEV && location.search.includes('state=')) return; // review mode
     const onVis = () => {
-      if (document.hidden && ['listening', 'thinking', 'speaking', 'reconnecting'].includes(phaseRef.current)) toggleMute();
+      if (!document.hidden) return;
+      if (variantRef.current === 'A') { stopSpeech(); return; }
+      if (['listening', 'thinking', 'speaking', 'reconnecting'].includes(phaseRef.current)) toggleMute();
     };
     document.addEventListener('visibilitychange', onVis);
     return () => document.removeEventListener('visibilitychange', onVis);
@@ -472,7 +506,7 @@ export function useVoice(variant: Variant) {
 
   return {
     phase, idleReason, caption, transcript, replyText, spokenWords, barEls, micLevel,
-    onScreenTap, toggleMute, leave,
+    onScreenTap, toggleMute, muted, toggleMuted, leave,
   };
 }
 

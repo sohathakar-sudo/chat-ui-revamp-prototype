@@ -13,7 +13,7 @@ const SPEAK_BARS = [
 ];
 
 export function VoiceA({ v }: { v: VoiceModel }) {
-  const { phase, caption, transcript, replyText, spokenWords, barEls, onScreenTap, toggleMute, leave } = v;
+  const { phase, caption, transcript, replyText, spokenWords, barEls, onScreenTap, muted, toggleMuted, leave } = v;
   const words = splitWords(replyText);
 
   return (
@@ -58,8 +58,8 @@ export function VoiceA({ v }: { v: VoiceModel }) {
             <span className="c aa">Aa</span>
             <span className="l">Type</span>
           </button>
-          <button className="v-btn" onClick={toggleMute} aria-label={phase === 'paused' ? 'Unmute' : 'Mute'} aria-pressed={phase === 'paused'}>
-            <span className={`c${phase === 'paused' ? ' active' : phase === 'speaking' ? ' dim' : ''}`}>
+          <button className="v-btn" onClick={toggleMuted} aria-label={muted ? 'Unmute' : 'Mute'} aria-pressed={muted}>
+            <span className={`c${muted ? ' active' : phase === 'speaking' ? ' dim' : ''}`}>
               <img src="/assets/mic-slash.svg" width={24} height={24} alt="" />
             </span>
             <span className="l">Mute</span>
