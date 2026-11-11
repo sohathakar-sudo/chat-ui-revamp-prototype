@@ -29,7 +29,7 @@ export function Loader() {
 /** Crossfade layer: sits above the freshly mounted Chat while the loader's art eases out. */
 export function LoaderOverlay({ onDone }: { onDone: () => void }) {
   useEffect(() => {
-    const t = setTimeout(onDone, 600);
+    const t = setTimeout(onDone, 950);
     return () => clearTimeout(t);
   }, [onDone]);
   return (

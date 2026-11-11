@@ -69,9 +69,9 @@ p { margin: 0; }
   animation: loader-breathe 1.6s ease-in-out infinite alternate;
 }
 .loader .label { position: absolute; top: 659px; width: 100%; text-align: center; font-family: "DM Sans", var(--sf); font-size: 17px; color: #1a1a1a; }
-.loader-out { z-index: 50; pointer-events: none; animation: fade-out 550ms cubic-bezier(.22, .61, .36, 1) forwards; }
-.loader-out .blob { animation: blob-open 550ms cubic-bezier(.22, .61, .36, 1) forwards; }
-.loader-out .mark, .loader-out .label { animation: fade-out 300ms ease forwards; }
+.loader-out { z-index: 50; pointer-events: none; animation: fade-out 900ms cubic-bezier(.4, 0, .2, 1) forwards; }
+.loader-out .blob { animation: blob-open 900ms cubic-bezier(.4, 0, .2, 1) forwards; }
+.loader-out .mark, .loader-out .label { animation: fade-out 600ms ease forwards; }
 @keyframes loader-breathe { from { transform: scale(0.92); } to { transform: scale(1.08); } }
 @keyframes fade-out { to { opacity: 0; } }
 
