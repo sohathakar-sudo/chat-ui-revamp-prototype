@@ -46,6 +46,8 @@ export function useVoice(variant: Variant) {
   const timers = useRef<{ silence?: number; noSpeech?: number; maxTurn?: number; retry?: number; resume?: number }>({});
   const raf = useRef(0);
   const barEls = useRef<(HTMLElement | null)[]>([]);
+  /** Last time recognition reported activity; drives the waveform when no level meter is available (Android). */
+  const lastActivity = useRef(0);
   const reply = useRef<Reply>(freshReply());
   const attempts = useRef(0);
   /** Why we're in Reconnecting: a failed reply (retry it) or being offline (resume listening). */
@@ -89,22 +91,9 @@ export function useVoice(variant: Variant) {
     const myTurn = turnId.current;
     setTranscript({ text: '', partial: false });
 
-    let m: Mic;
-    try {
-      m = await openMic();
-    } catch (e) {
-      if (myTurn !== turnId.current) return;
-      setPhase(e instanceof MicDeniedError ? 'denied' : 'failed');
-      return;
-    }
-    if (myTurn !== turnId.current) { m.close(); return; }
-    mic.current = m;
-    setReplyText('');
-    setSpokenWords(0);
-    setPhase('listening');
+    const serverMode = store.get().status.stt === 'server';
 
     let heard = false;
-    let text = '';
     const end = () => endTurn(myTurn);
     const onSpeech = () => {
       heard = true;
@@ -112,23 +101,44 @@ export function useVoice(variant: Variant) {
       clearTimer('silence');
       timers.current.silence = window.setTimeout(end, config.voice.silenceMs);
     };
+    const armTimers = () => {
+      timers.current.noSpeech = window.setTimeout(() => {
+        if (!heard && myTurn === turnId.current) { stopListening(); setIdleReason('timeout'); setPhase('idle'); }
+      }, config.voice.noSpeechTimeoutMs);
+      timers.current.maxTurn = window.setTimeout(end, config.voice.maxTurnMs);
+    };
 
-    timers.current.noSpeech = window.setTimeout(() => {
-      if (!heard && myTurn === turnId.current) { stopListening(); setIdleReason('timeout'); setPhase('idle'); }
-    }, config.voice.noSpeechTimeoutMs);
-    timers.current.maxTurn = window.setTimeout(end, config.voice.maxTurnMs);
-
-    if (store.get().status.stt === 'server') {
+    if (serverMode) {
+      // Server STT: capture the stream for upload; the real mic level drives the bars.
+      let m: Mic;
+      try {
+        m = await openMic();
+      } catch (e) {
+        if (myTurn !== turnId.current) return;
+        setPhase(e instanceof MicDeniedError ? 'denied' : 'failed');
+        return;
+      }
+      if (myTurn !== turnId.current) { m.close(); return; }
+      mic.current = m;
+      setReplyText(''); setSpokenWords(0); setPhase('listening');
+      armTimers();
       const recorder = new MediaRecorder(m.stream);
       const chunks: Blob[] = [];
       recorder.ondataavailable = (e) => e.data.size && chunks.push(e.data);
       recorder.start();
       media.current = { recorder, chunks };
     } else {
+      // Browser STT: the recognizer owns the single microphone. Start it FIRST and
+      // synchronously (inside the tap gesture) so Android Chrome grants it cleanly;
+      // the level meter is a best-effort second mic that must never block it. On
+      // Android the second getUserMedia is usually refused, and the bars then fall
+      // back to recognition activity (see the tick below).
+      setReplyText(''); setSpokenWords(0); setPhase('listening');
+      armTimers();
       const r = createRecognizer({
         onUpdate: (t, partial) => {
           if (myTurn !== turnId.current) return;
-          text = t;
+          lastActivity.current = performance.now();
           setTranscript({ text: t, partial });
           if (t) onSpeech();
         },
@@ -141,21 +151,35 @@ export function useVoice(variant: Variant) {
       });
       try { r.start(); } catch { /* already running */ }
       rec.current = r;
+      try {
+        const m = await openMic();
+        if (myTurn !== turnId.current) m.close();
+        else mic.current = m;
+      } catch { /* no meter: bars use recognition activity */ }
     }
 
-    // Bars follow the mic level; server STT also uses it to detect speech and silence.
+    // Bars: real mic level when the meter is available, otherwise a gentle
+    // activity-driven amplitude so they always move while listening (Android).
     const tick = () => {
       if (myTurn !== turnId.current) return;
-      const lv = m.level();
-      if (store.get().status.stt === 'server' && lv > 0.12) onSpeech();
+      const lv = mic.current ? mic.current.level() : 0;
+      if (serverMode && lv > 0.12) onSpeech();
+      let amp: number;
+      if (lv > 0.04) {
+        amp = Math.min(1, lv * 1.6);
+      } else {
+        const since = performance.now() - lastActivity.current;
+        const act = since < 1200 ? 1 - since / 1200 : 0;
+        // Server mode has a real mic, so silence stays collapsed; browser mode keeps
+        // a low baseline plus a bump on recent speech so the user sees it listening.
+        amp = serverMode ? 0 : 0.14 + act * 0.7;
+      }
       barEls.current.forEach((el, i) => {
         if (!el) return;
         if (el.dataset.level === 'scale') {
-          el.style.transform = `scale(${(1 + Math.min(1, lv * 1.6) * 0.18).toFixed(3)})`;
+          el.style.transform = `scale(${(1 + Math.min(1, amp) * 0.18).toFixed(3)})`;
           return;
         }
-        // Listening bars are sensitive to sound: empty (collapsed) in silence, rising as the user speaks.
-        const amp = Math.min(1, lv * 1.6);
         const wobble = 0.75 + 0.25 * Math.sin(performance.now() / (140 + i * 37) + i);
         if (amp < 0.05) {
           el.style.transform = 'scaleY(0.04)';
@@ -168,7 +192,6 @@ export function useVoice(variant: Variant) {
       raf.current = requestAnimationFrame(tick);
     };
     raf.current = requestAnimationFrame(tick);
-    void text;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stopListening]);
 
@@ -435,8 +458,15 @@ export function useVoice(variant: Variant) {
     }
   })();
 
-  /** Live mic level 0..1 while listening (0 otherwise). Drives Variant B's bottom glow. */
-  const micLevel = () => (mic.current && phaseRef.current === 'listening' ? mic.current.level() : 0);
+  /** Live mic level 0..1 while listening (0 otherwise). Drives Variant B's bottom glow.
+   *  Falls back to recognition activity when no level meter is available (Android). */
+  const micLevel = () => {
+    if (phaseRef.current !== 'listening') return 0;
+    const lvl = mic.current ? mic.current.level() : 0;
+    if (lvl > 0.04) return lvl;
+    const since = performance.now() - lastActivity.current;
+    return since < 1200 ? 0.4 * (1 - since / 1200) : 0;
+  };
 
   return {
     phase, idleReason, caption, transcript, replyText, spokenWords, barEls, micLevel,
