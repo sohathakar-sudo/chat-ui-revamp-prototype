@@ -254,8 +254,15 @@ export function useVoice(variant: Variant) {
     if (r.ttsFailed || mutedRef.current) {
       // Show the reply as text; continue once it's complete.
       if (phaseRef.current !== 'speaking') setPhase('speaking');
-      setSpokenWords(splitWords(r.text).length);
-      if (r.streamDone) { clearTimer('resume'); timers.current.resume = window.setTimeout(finishReply, mutedRef.current ? 1800 : 1200); }
+      const words = splitWords(r.text);
+      setSpokenWords(words.length);
+      if (r.streamDone) {
+        clearTimer('resume');
+        // When muted, hold the caption long enough to read the whole reply (scaled by
+        // length) before returning to listening, keeping the live carryover visible.
+        const delay = mutedRef.current ? Math.min(6500, 1600 + words.length * 180) : 1200;
+        timers.current.resume = window.setTimeout(finishReply, delay);
+      }
       return;
     }
 
