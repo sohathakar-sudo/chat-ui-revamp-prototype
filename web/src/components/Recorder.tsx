@@ -105,14 +105,15 @@ export function Recorder({ onDone, onDenied, accent = 'teal' }: Props) {
     startTimer = window.setTimeout(async () => {
       S.start = performance.now();
       loop();
-      try {
-        S.mic = await openMic(); // mic first, so the level meter works
-        if (!S.alive) { S.mic.close(); return; }
-      } catch (e) {
-        if (e instanceof MicDeniedError) { S.finished = true; onDenied(); return; }
-        // otherwise carry on without a meter
-      }
       if (serverMode) {
+        // Server mode needs the stream for MediaRecorder. In browser mode the recognizer owns the
+        // mic (a second capture starves webkitSpeechRecognition on Android); bars use the pulse.
+        try {
+          S.mic = await openMic();
+          if (!S.alive) { S.mic.close(); return; }
+        } catch (e) {
+          if (e instanceof MicDeniedError) { S.finished = true; onDenied(); return; }
+        }
         if (!S.mic) { S.finished = true; onDone(null); return; }
         try {
           const media = new MediaRecorder(S.mic.stream);
