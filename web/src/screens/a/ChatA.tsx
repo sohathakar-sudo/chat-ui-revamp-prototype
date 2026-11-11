@@ -35,7 +35,6 @@ export function ChatA({ c }: { c: ChatModel }) {
             m={m}
             c={c}
             typed={m.id === typeIn.typingId ? m.text.slice(0, typeIn.shown) : undefined}
-            fadeSpeaker={m.id === typeIn.typedId}
             enterFade={!!typeIn.typedId && m.id !== typeIn.typedId}
           />
         ))}
@@ -92,10 +91,9 @@ export function ChatA({ c }: { c: ChatModel }) {
   );
 }
 
-function MessageRow({ m, c, typed, fadeSpeaker, enterFade }: {
-  m: Message; c: ChatModel; typed?: string; fadeSpeaker?: boolean; enterFade?: boolean;
+function MessageRow({ m, c, typed, enterFade }: {
+  m: Message; c: ChatModel; typed?: string; enterFade?: boolean;
 }) {
-  const playing = c.playingId === m.id;
   if (m.role === 'user') {
     return (
       <div className={`msg user${enterFade ? ' tr-fade' : ''}`}>
@@ -122,11 +120,6 @@ function MessageRow({ m, c, typed, fadeSpeaker, enterFade }: {
   return (
     <div className={`msg wysa${enterFade ? ' tr-fade' : ''}`}>
       <p className="text">{typed ?? m.text}{typed !== undefined && <span className="type-caret a" />}</p>
-      {m.status === 'done' && typed === undefined && (
-        <button className={`speaker${playing ? ' playing' : ''}${fadeSpeaker ? ' fade-in' : ''}`} onClick={() => c.togglePlayback(m.id, m.text)} aria-label={playing ? 'Stop' : 'Play message'} aria-pressed={playing}>
-          <img src="/assets/speaker.svg" width={24} height={24} alt="" />
-        </button>
-      )}
     </div>
   );
 }
