@@ -2,7 +2,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { config } from '../../../shared/config';
 import { store, useStore } from './store';
-import { addUserMessage, isReplying, requestReply, retryReply } from './conversation';
+import { addUserMessage, isFarewell, isReplying, requestReply, retryReply } from './conversation';
 import { stopMessagePlayback, toggleMessagePlayback, unlockAudio, voiceSupported } from './speech';
 import { MIC_DENIED } from './useVoice';
 
@@ -50,10 +50,24 @@ export function useChat() {
     return () => { clearTimeout(t); clearTimeout(timer); window.removeEventListener('pointerdown', close, { capture: true }); };
   }, [anyTip]);
 
+  // Farewell ("bye"): once Wysa's reply for that turn is done, pause a beat, then return Home.
+  const farewell = useRef(false);
+  const wasReplying = useRef(false);
+  useEffect(() => {
+    let t: number | undefined;
+    if (wasReplying.current && !replying && farewell.current) {
+      farewell.current = false;
+      t = window.setTimeout(() => { stopMessagePlayback(); store.go('home'); }, 1600);
+    }
+    wasReplying.current = replying;
+    return () => { if (t) clearTimeout(t); };
+  }, [replying]);
+
   const send = (value: string) => {
     const v = value.trim();
     if (!v || isReplying() || !store.get().online) return;
     setNotice(null);
+    farewell.current = isFarewell(v);
     addUserMessage(v);
     requestReply();
   };

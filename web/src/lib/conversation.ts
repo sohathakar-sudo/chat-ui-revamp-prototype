@@ -9,6 +9,8 @@ export type ReplyHandle = {
   abort(): void;
 };
 
+export const isFarewell = (t: string) => /\b(bye|goodbye|good ?night|see (you|ya)|talk (to you )?later|that'?s all|that is all|gotta go|i'?m done|catch you later)\b/i.test(t.trim());
+
 export function isReplying() {
   return store.get().messages.some((m) => m.role === 'assistant' && (m.status === 'pending' || m.status === 'streaming'));
 }

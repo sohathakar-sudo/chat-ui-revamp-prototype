@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { config } from '../../../shared/config';
 import { store, useStore, type Variant } from './store';
-import { addUserMessage, removeMessage, requestReply, type ReplyHandle } from './conversation';
+import { addUserMessage, isFarewell, removeMessage, requestReply, type ReplyHandle } from './conversation';
 import {
   createRecognizer, MicDeniedError, openMic, speak, splitWords, stopMessagePlayback, transcribeOnServer, unlockAudio,
   type Mic, type Recognizer, type Speech,
@@ -55,6 +55,9 @@ export function useVoice(variant: Variant) {
   /** Mute during Thinking holds the reply; it plays on resume. */
   const heldReply = useRef(false);
   const turnId = useRef(0);
+  // A farewell was spoken: after Wysa's closing line, return Home instead of listening again.
+  const endingAfterReply = useRef(false);
+  const leaveRef = useRef<(s: 'home' | 'chat' | 'voices') => void>(() => {});
 
   // ---------- teardown helpers ----------
   const clearTimer = (k: keyof typeof timers.current) => { window.clearTimeout(timers.current[k]); timers.current[k] = undefined; };
@@ -214,6 +217,7 @@ export function useVoice(variant: Variant) {
     setTranscript({ text, partial: false });
     addUserMessage(text);
     attempts.current = 0;
+    if (isFarewell(text)) endingAfterReply.current = true;
     beginReply();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stopListening, startListening]);
@@ -222,6 +226,7 @@ export function useVoice(variant: Variant) {
   const finishReply = useCallback(() => {
     reply.current = freshReply();
     heldReply.current = false;
+    if (endingAfterReply.current) { endingAfterReply.current = false; leaveRef.current('home'); return; }
     startListening();
   }, [startListening]);
 
@@ -387,6 +392,7 @@ export function useVoice(variant: Variant) {
     reply.current = freshReply();
     store.go(screen); // Variant B animates this (transitions.ts)
   };
+  leaveRef.current = leave;
 
 
   // Switching variant mid-turn pauses the conversation; it stays paused in the new variant.
