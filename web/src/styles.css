@@ -409,7 +409,7 @@ p { margin: 0; }
 .hb-copy h1 { margin: 0; font: 700 34px/1.2 var(--manrope); letter-spacing: 0.34px; color: var(--b-ink); }
 .hb-copy p { width: 350px; max-width: 100%; font: 400 24px/1.2 var(--manrope); color: var(--secondary); }
 .hb-pills { width: 100%; display: flex; gap: 20px; padding: 24px 10px; }
-.hb-pill { flex: 1; height: 50px; padding: 10px; border-radius: 100px; background: #fff; filter: drop-shadow(0 0 3.5px rgba(80, 159, 170, 0.1)); font: 700 20px var(--manrope); color: var(--b-ink); }
+.hb-pill { flex: 1; height: 50px; padding: 10px; border-radius: 100px; background: #fff; filter: drop-shadow(0 0 3.5px rgba(80, 159, 170, 0.1)); font: 700 16px var(--manrope); color: var(--b-ink); }
 .hb-pill.speak { color: var(--b-orange); }
 .hb-today { background: var(--b-bg); }
 
