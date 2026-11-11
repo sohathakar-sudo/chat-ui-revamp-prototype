@@ -1,8 +1,8 @@
 // Variant B chat thread (Figma 531:8808 Chat/Active, 531:8779 Chat/Typing).
-import { useEffect, useRef, useState } from 'react';
 import type { Message } from '../../lib/store';
 import type { ChatModel } from '../../lib/useChat';
 import { useTypeIn } from '../../lib/useTypeIn';
+import { useHideOnScroll } from '../../lib/useHideOnScroll';
 import { StatusBar } from '../../components/StatusBar';
 import { Recorder } from '../../components/Recorder';
 
@@ -10,22 +10,7 @@ export function ChatB({ c }: { c: ChatModel }) {
   const typing = c.hasText && !c.recording;
   const typeIn = useTypeIn(c.messages, 520);
   // Hide the top bar when scrolling down, show it when scrolling up or near the top.
-  const [headHidden, setHeadHidden] = useState(false);
-  const lastTop = useRef(0);
-  useEffect(() => {
-    const el = c.threadRef.current;
-    if (!el) return;
-    const onScroll = () => {
-      const top = el.scrollTop;
-      const d = top - lastTop.current;
-      if (top < 8) setHeadHidden(false);
-      else if (d > 8) setHeadHidden(true);
-      else if (d < -8) setHeadHidden(false);
-      if (Math.abs(d) > 8 || top < 8) lastTop.current = top;
-    };
-    el.addEventListener('scroll', onScroll, { passive: true });
-    return () => el.removeEventListener('scroll', onScroll);
-  }, [c.threadRef]);
+  const headHidden = useHideOnScroll(c.threadRef);
   return (
     <div className={`scr chat chat-b${typing ? ' is-typing' : ''}`}>
       <img className="cb-glow-cool" src="/assets/b/chat-glow-cool.svg" alt="" />
