@@ -253,6 +253,7 @@ export function useVoice(variant: Variant) {
 
     if (r.ttsFailed || mutedRef.current) {
       // Show the reply as text; continue once it's complete.
+      if (phaseRef.current !== 'speaking') setPhase('speaking');
       setSpokenWords(splitWords(r.text).length);
       if (r.streamDone) { clearTimer('resume'); timers.current.resume = window.setTimeout(finishReply, mutedRef.current ? 1800 : 1200); }
       return;
