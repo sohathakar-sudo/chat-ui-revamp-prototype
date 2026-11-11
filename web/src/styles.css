@@ -419,6 +419,8 @@ p { margin: 0; }
 .cb-glow-cool { position: absolute; width: 1000px; height: 1000px; left: calc(50% - 339px); bottom: -663px; pointer-events: none; z-index: 0; }
 .cb-glow-warm { position: absolute; width: 771px; height: 771px; left: calc(50% - 541px); bottom: -449px; pointer-events: none; z-index: 0; }
 .cb-head { position: relative; z-index: 3; height: 72px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 16px 0 15.996px; filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.05)); }
+.cb-head { transition: transform 250ms ease, opacity 250ms ease; }
+.cb-head.hidden { transform: translateY(-100%); opacity: 0; pointer-events: none; }
 .cb-back { position: absolute; inset: 16.67%; width: 66.66%; height: 66.66%; }
 .cb-history { display: block; width: 42px; height: 42px; }
 .cb-tip { top: 50px; right: 4px; }
