@@ -1,5 +1,5 @@
 // Variant B chat thread (Figma 531:8808 Chat/Active, 531:8779 Chat/Typing).
-import type { Message } from '../../lib/store';
+import { store, useStore, type Message } from '../../lib/store';
 import type { ChatModel } from '../../lib/useChat';
 import { useTypeIn } from '../../lib/useTypeIn';
 import { useHideOnScroll } from '../../lib/useHideOnScroll';
@@ -8,6 +8,7 @@ import { Recorder } from '../../components/Recorder';
 
 export function ChatB({ c }: { c: ChatModel }) {
   const typing = c.hasText && !c.recording;
+  const musicOn = useStore((s) => s.musicOn);
   const typeIn = useTypeIn(c.messages, 520);
   // Hide the top bar when scrolling down, show it when scrolling up or near the top.
   const headHidden = useHideOnScroll(c.threadRef);
@@ -20,11 +21,21 @@ export function ChatB({ c }: { c: ChatModel }) {
         <button className="icon24" onClick={c.back} aria-label="Back">
           <img className="cb-back" src="/assets/b/back.svg" alt="" />
         </button>
-        <div className="progress-wrap">
-          <button className="cb-history" onClick={c.toggleHeaderTip} aria-label="Past conversations">
-            <img src="/assets/b/history.svg" width={42} height={42} alt="" />
+        <div className="cb-actions">
+          <button
+            className="cb-music"
+            onClick={() => store.set((s) => ({ musicOn: !s.musicOn }))}
+            aria-pressed={musicOn}
+            aria-label={musicOn ? 'Turn off background music' : 'Turn on background music'}
+          >
+            <img src={musicOn ? '/assets/b/music-note.svg' : '/assets/b/music-off.svg'} width={24} height={24} alt="" />
           </button>
-          {c.headerTip && <div className="tooltip cb-tip" role="status">Your past conversations will be accessible from here.</div>}
+          <div className="progress-wrap">
+            <button className="cb-history" onClick={c.toggleHeaderTip} aria-label="Past conversations">
+              <img src="/assets/b/history.svg" width={42} height={42} alt="" />
+            </button>
+            {c.headerTip && <div className="tooltip cb-tip" role="status">Your past conversations will be accessible from here.</div>}
+          </div>
         </div>
       </div>
       {!c.online && <div className="offline" role="status">You're offline</div>}

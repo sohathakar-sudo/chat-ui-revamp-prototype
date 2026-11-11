@@ -25,6 +25,8 @@ export type State = {
   status: { llm: string; stt: 'browser' | 'server'; tts: 'browser' | 'server' };
   /** Design variant (A/B). Session only; a link can preselect it with ?variant=B. */
   variant: Variant;
+  /** Variant B background music on/off (session only). Drives lib/music.ts. */
+  musicOn: boolean;
   /** Running Variant B screen transition, if any. */
   trans: Trans | null;
 };
@@ -62,6 +64,7 @@ let state: State = {
   online: typeof navigator === 'undefined' ? true : navigator.onLine,
   status: { llm: 'placeholder', stt: 'browser', tts: 'browser' },
   variant: initialVariant,
+  musicOn: true,
   trans: null,
 };
 

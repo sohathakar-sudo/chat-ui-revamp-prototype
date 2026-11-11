@@ -1,0 +1,10 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="music_note">
+<mask id="mask0_0_6" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24">
+<rect id="Bounding box" width="24" height="24" fill="#575B7F"/>
+</mask>
+<g mask="url(#mask0_0_6)">
+<path id="music_note_2" d="M7.9345 18.9307C7.35 18.3461 7.05775 17.6384 7.05775 16.8078C7.05775 15.9769 7.35 15.2692 7.9345 14.6845C8.51917 14.1 9.22692 13.8078 10.0577 13.8078C10.4411 13.8078 10.8048 13.876 11.149 14.0125C11.4933 14.149 11.7962 14.3538 12.0577 14.627V4.19225H16.9423V6.73075H13.0577V16.8078C13.0577 17.6384 12.7654 18.3461 12.1808 18.9307C11.5961 19.5154 10.8884 19.8078 10.0577 19.8078C9.22692 19.8078 8.51917 19.5154 7.9345 18.9307Z" fill="#575B7F"/>
+</g>
+</g>
+</svg>

@@ -425,6 +425,10 @@ p { margin: 0; }
 /* Collapse the 72px it occupies (margin-top) as it slides up, so the thread fills the space. */
 .cb-head.hidden { transform: translateY(-100%); opacity: 0; margin-top: -72px; pointer-events: none; }
 .cb-back { position: absolute; inset: 16.67%; width: 66.66%; height: 66.66%; }
+/* Right-side header controls: music toggle + history, 24px apart (Figma 591:11971). */
+.cb-actions { display: flex; align-items: center; gap: 24px; }
+.cb-music { display: block; width: 24px; height: 24px; }
+.cb-music img { display: block; width: 24px; height: 24px; }
 .cb-history { display: block; width: 42px; height: 42px; }
 .cb-tip { top: 50px; right: 4px; }
 .cb-thread {
