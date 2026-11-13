@@ -31,6 +31,18 @@ export function useVoice(variant: Variant) {
   /** Why we're idle: first open (Ready) or the 8s no-speech timeout. */
   const [idleReason, setIdleReason] = useState<'initial' | 'timeout'>('initial');
 
+  // Variant C, Chat Talk with an existing user message: auto-listen once the whoosh has finished.
+  const [resuming] = useState(() => variant === 'C' && store.get().voiceEntry === 'talk-resume');
+  useEffect(() => {
+    const entry = store.get().voiceEntry;
+    if (entry) store.set({ voiceEntry: null });
+    if (!resuming) return;
+    const wait = Math.max(0, (store.get().trans?.until ?? 0) - Date.now());
+    const t = setTimeout(() => { if (phaseRef.current === 'idle') startListening(); }, wait);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const online = useStore((s) => s.online);
   const [phase, setPhaseState] = useState<Phase>('idle');
   const [transcript, setTranscript] = useState({ text: '', partial: false });
@@ -57,7 +69,7 @@ export function useVoice(variant: Variant) {
   const turnId = useRef(0);
   // A farewell was spoken: after Wysa's closing line, return Home instead of listening again.
   const endingAfterReply = useRef(false);
-  const leaveRef = useRef<(s: 'home' | 'chat' | 'voices') => void>(() => {});
+  const leaveRef = useRef<(s: 'home' | 'chat' | 'voices', source?: 'type' | 'close') => void>(() => {});
   /** Variant A mute: the session keeps running, only Wysa's voice (TTS) is silenced. */
   const mutedRef = useRef(false);
   const [muted, setMuted] = useState(false);
@@ -424,13 +436,13 @@ export function useVoice(variant: Variant) {
     }
   };
 
-  const leave = (screen: 'home' | 'chat' | 'voices') => {
+  const leave = (screen: 'home' | 'chat' | 'voices', source?: 'type' | 'close') => {
     stopAll();
     mutedRef.current = false;
     setMuted(false);
     phaseRef.current = 'idle';
     reply.current = freshReply();
-    store.go(screen); // Variant B animates this (transitions.ts)
+    store.go(screen, source); // Variant B animates this (transitions.ts)
   };
   leaveRef.current = leave;
 
@@ -513,7 +525,7 @@ export function useVoice(variant: Variant) {
   };
 
   return {
-    phase, idleReason, caption, transcript, replyText, spokenWords, barEls, micLevel,
+    phase, idleReason, resuming, caption, transcript, replyText, spokenWords, barEls, micLevel,
     onScreenTap, toggleMute, muted, toggleMuted, leave,
   };
 }

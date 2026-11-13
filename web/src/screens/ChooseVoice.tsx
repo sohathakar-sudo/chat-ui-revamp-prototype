@@ -7,7 +7,7 @@ import { StatusBar } from '../components/StatusBar';
 type Blob = { src: string; size: number; left: number; top: number };
 
 // Variant-specific look: card blobs positioned as in Figma (card is 203px wide).
-const SKINS: Record<Variant, { blobs: Record<VoiceName, Blob>; className: string }> = {
+const SKINS: Record<Exclude<Variant, 'C'>, { blobs: Record<VoiceName, Blob>; className: string }> = {
   // Variant A, 526:8562
   A: {
     className: '',
@@ -32,7 +32,7 @@ const SKINS: Record<Variant, { blobs: Record<VoiceName, Blob>; className: string
 
 export function ChooseVoice() {
   const variant = useStore((s) => s.variant);
-  const skin = SKINS[variant];
+  const skin = SKINS[variant === 'C' ? 'B' : variant]; // Variant C reuses B's Choose a Voice
   const [selected, setSelected] = useState<VoiceName>(store.get().voice);
   const sample = useRef<Speech | null>(null);
 

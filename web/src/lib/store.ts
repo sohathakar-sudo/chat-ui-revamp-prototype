@@ -29,6 +29,8 @@ export type State = {
   musicOn: boolean;
   /** Running Variant B screen transition, if any. */
   trans: Trans | null;
+  /** Variant C: how Voice was entered from Chat's Talk button (transient; cleared by useVoice). */
+  voiceEntry?: 'talk-resume' | 'talk-fresh' | null;
 };
 
 let id = 0;
@@ -66,6 +68,7 @@ let state: State = {
   variant: initialVariant,
   musicOn: true,
   trans: null,
+  voiceEntry: null,
 };
 
 const listeners = new Set<() => void>();
@@ -83,17 +86,17 @@ export const store = {
   updateMessage(mid: string, patch: Partial<Message>) {
     store.set((s) => ({ messages: s.messages.map((m) => (m.id === mid ? { ...m, ...patch } : m)) }));
   },
-  go(screen: Screen, source?: 'chat' | 'speak') {
+  go(screen: Screen, source?: 'chat' | 'speak' | 'type' | 'close') {
     nav(screen, {}, source);
   },
   /** Enter voice mode from Home or Chat (call inside the tap so audio is unlocked). */
-  enterVoice(source?: 'chat' | 'speak') {
+  enterVoice(source?: 'chat' | 'speak' | 'type' | 'close') {
     nav('voice', {}, source);
   },
 };
 
 // Set by transitions.ts (avoids a circular import at module load).
-let nav: (to: Screen, patch?: Partial<State>, source?: 'chat' | 'speak') => void = (to, patch) => store.set({ screen: to, ...patch });
+let nav: (to: Screen, patch?: Partial<State>, source?: 'chat' | 'speak' | 'type' | 'close') => void = (to, patch) => store.set({ screen: to, ...patch });
 export function setNavigator(fn: typeof nav) { nav = fn; }
 
 export function useStore<T>(select: (s: State) => T): T {

@@ -806,3 +806,176 @@ p { margin: 0; }
 /* Voice muted: the orb alone, breathing slowly (no Figma frame; flagged for design review). */
 .orb.paused { animation: orb-paused 4s ease-in-out infinite; }
 @keyframes orb-paused { 0%, 100% { transform: scale(1); opacity: 0.85; } 50% { transform: scale(1.04); opacity: 1; } }
+
+/* =====================================================================================
+   VARIANT C (Figma "Iteration 3", section 681:2134)
+   Chat 681:2412 / 681:2135 / 681:2443, Voice 681:2162 / 681:2211 / 681:2248 / 681:2294.
+   Font is SF Pro here only; A/B rules above are untouched.
+   Chat <-> Voice has no timeline in lib/transitions.ts, so the swap is instant (no swoosh).
+   The two screens share background, glows and the 138px bottom region; only that region fades in.
+   ===================================================================================== */
+.scr.chat-c, .scr.vc {
+  --c-font: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'SF Pro', system-ui, sans-serif;
+  font-family: var(--c-font);
+  background: #fffefc;
+  color: #1a1a32;
+}
+.scr.chat-c button, .scr.chat-c textarea, .scr.vc button { font-family: inherit; }
+.scr.chat-c .tooltip, .scr.vc .tooltip { font-family: var(--c-font); }
+
+/* Loader: the Wysa home orb, rotating (inside DuoOrb) and breathing */
+.loader .blob-orb { position: absolute; left: 50%; top: 417px; width: 190px; height: 190px; margin: -95px 0 0 -95px; overflow: hidden; animation: loader-orb-breathe 2.4s ease-in-out infinite alternate; }
+.loader .blob-orb .duo { --duo-a-size: 74%; --duo-b-size: 84%; --duo-r-px: 5px; }
+.loader .blob-orb .duo-a { animation-duration: 12s, 32s; }
+.loader .blob-orb .duo-b { animation-duration: 14s, 32s; }
+.loader-out .blob-orb, .to-home .blob-orb { animation: blob-open 900ms cubic-bezier(.4, 0, .2, 1) forwards; }
+@keyframes loader-orb-breathe { from { transform: scale(0.88); } to { transform: scale(1.06); } }
+
+/* Chat C */
+.cc-glow-big { position: absolute; width: 1000px; height: 1000px; left: calc(50% - 339px); bottom: -663px; pointer-events: none; z-index: 0; }
+.cc-glow-small { position: absolute; width: 771px; height: 771px; left: calc(50% - 541px); bottom: -449px; pointer-events: none; z-index: 0; }
+.is-typing .cc-glow-big { left: calc(50% - 337px); }
+.cc-head { position: relative; z-index: 3; height: 72px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 16px 0 15.996px; filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.05)); }
+.cc-back { position: absolute; inset: 16.67%; width: 66.66%; height: 66.66%; }
+.cc-tip { top: 36px; right: -4px; }
+/* The bottom gradient (cc-glow-*) stays a background layer (z-0) behind the thread (z-1) and the
+   input card (z-3). The thread is cut off at the bottom so scrolling messages disappear cleanly
+   behind the input box instead of riding over the gradient. */
+.cc-thread {
+  padding: 0 24px 17px 30px; overflow-anchor: none;
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 40px), transparent 100%);
+          mask-image: linear-gradient(to bottom, #000 calc(100% - 40px), transparent 100%);
+}
+.chat-c .msg + .msg { margin-top: 24px; }
+.chat-c .msg.user + .msg.user { margin-top: 24px; }
+.cc-wysa .text { font: 400 16px/24px var(--c-font); color: #1a1a32; }
+.cc-wysa { gap: 24px; }
+.cc-bubble { width: fit-content; max-width: 307px; margin-left: auto; padding: 12px 16px; border-radius: 20px 20px 4px 20px; background: var(--bubble); color: var(--navy); font: 400 16px/24px var(--c-font); text-align: left; white-space: pre-wrap; overflow-wrap: anywhere; }
+.chat-c .msg.user { display: block; }
+.cc-read { display: flex; align-items: center; gap: 10px; font: 400 12px/20px var(--c-font); color: #9194b9; }
+.cc-read.playing { animation: speaker-pulse 1s ease-in-out infinite; }
+.cc-comp { position: relative; z-index: 3; flex-shrink: 0; padding: 12px 12px 24px; animation: cc-bottom-in 220ms ease-out both; }
+.cc-card {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 8px; padding: 12px;
+  background: #fff; border-radius: 28px; filter: drop-shadow(0 4px 2px rgba(0, 0, 0, 0.05));
+}
+.cc-field { width: 100%; display: flex; padding: 8px 12px; background: #fff; border-radius: 100px; }
+.cc-card textarea {
+  width: 100%; display: block; border: 0; outline: 0; resize: none; padding: 0; background: none;
+  font: 400 16px/20px var(--c-font); color: #1a1a32; caret-color: #1a1a32;
+  max-height: 144px; overflow-y: auto; scrollbar-width: none;
+}
+.cc-card textarea::placeholder { color: #b1b4ce; }
+.cc-row { position: relative; width: 100%; display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+.cc-talk {
+  height: 42px; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 12px 16px;
+  background: #fff; border: 1px solid #fff; border-radius: 140px; filter: drop-shadow(0 0 3px #cacaca);
+  font: 400 16px/normal var(--c-font); color: #de761e; white-space: nowrap;
+}
+.cc-mic { width: 42px; height: 42px; flex-shrink: 0; }
+.cc-talk:disabled, .cc-mic:disabled, .cc-send:disabled { opacity: 0.5; cursor: default; }
+.cc-row .tooltip { top: auto; bottom: calc(100% + 10px); right: 0; }
+.cc-row .tooltip::before { top: auto; bottom: -6px; border-bottom: 0; border-top: 6px solid var(--ink); }
+/* Typing: one row, send button at the end (681:2135) */
+.is-typing .cc-card { flex-direction: row; align-items: flex-end; justify-content: space-between; }
+.is-typing .cc-field { flex: 0 1 309px; width: auto; }
+.is-typing .cc-card textarea { line-height: 24px; }
+.cc-send { width: 46px; height: 46px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; padding: 10px; border-radius: 100px; background: #de761e; }
+/* Recorder skin (681:2443) */
+.rec-c .rec-ok { width: 42px; height: 42px; background: #de761e !important; }
+.rec-c { animation: cc-bottom-in 220ms ease-out both; }
+@keyframes cc-bottom-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
+/* Voice C */
+.vc { overflow: hidden; justify-content: space-between; }
+.vc-glow { position: absolute; pointer-events: none; z-index: 0; transform: rotate(180deg); opacity: 0; transition: opacity 600ms ease; }
+.vc-glow.on { opacity: 1; }
+.vc-glow img { display: block; width: 100%; height: 100%; }
+.vc-glow-bottom { width: 800px; height: 621px; left: calc(50% + 18px - 400px); bottom: -315px; }
+.vc-glow-bottom.listen { bottom: -332px; }
+.vc-glow-top { width: 1048px; height: 771px; left: calc(50% - 515px); top: -513px; }
+.vc-glow-top.speak { left: calc(50% - 547px); }
+.vc-main { position: relative; z-index: 1; flex: 1; min-height: 0; max-height: 708px; padding: 0 24px; display: flex; flex-direction: column; gap: 24px; }
+.vc-head { display: flex; justify-content: space-between; align-items: flex-start; min-height: 42px; }
+.vc-actions { display: flex; gap: 12px; align-items: flex-start; }
+.vc-icon { width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; }
+.vc .progress-wrap { position: relative; }
+.vc-tip { top: 48px; right: 0; }
+.vc-start { flex: 1; min-height: 0; max-height: 596px; padding: 24px 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 36px; }
+.vc-start-title { font: 300 24px/normal var(--c-font); color: #1a1a32; text-align: center; }
+.vc-landing-orb { position: relative; width: 190px; height: 190px; flex-shrink: 0; overflow: hidden; }
+.vc-landing-orb .duo { --duo-a-size: 74%; --duo-b-size: 84%; --duo-r-px: 5px; }
+/* Whole conversation: scrolls, but nothing in it is tappable */
+.vc-transcript { flex: 1; min-height: 0; padding-bottom: 24px; margin-right: -14px; padding-right: 14px; display: flex; flex-direction: column; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(60, 63, 88, 0.25) transparent; user-select: none; -webkit-user-select: none; }
+.vc-transcript::-webkit-scrollbar { width: 6px; }
+.vc-transcript::-webkit-scrollbar-thumb { background: rgba(60, 63, 88, 0.25); border-radius: 100px; }
+/* User lines stay in blue bubbles (overrides Figma 708:7706, which shows plain text). Flag for design review. */
+.vc-bubble { width: fit-content; max-width: 307px; margin: 8px 0 8px auto; padding: 12px 16px; border-radius: 20px 20px 4px 20px; background: var(--bubble); color: var(--navy); font: 400 16px/24px var(--c-font); text-align: left; white-space: pre-wrap; overflow-wrap: anywhere; }
+.vc-jump { position: absolute; right: 24px; bottom: 190px; z-index: 2; width: 32px; height: 32px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; filter: drop-shadow(0 0 3.5px #d1d3d7); }
+.vc-line { padding: 10px 0; font: 400 16px/24px var(--c-font); color: #1a1a32; white-space: pre-wrap; overflow-wrap: anywhere; }
+.vc-wysa { width: 354px; max-width: 100%; }
+.vc-wysa .later { color: #b1b4ce; }
+.vc-user { text-align: right; margin-top: 4px; }
+.vc-wysa + .vc-wysa { margin-top: 4px; }
+.vc-orb-block { height: 178px; flex-shrink: 0; margin: 0 -24px; padding: 24px 0; display: flex; flex-direction: column; align-items: center; justify-content: space-between; }
+.vc-orb { position: relative; width: 100px; height: 100px; flex-shrink: 0; }
+.vc-orb .duo { --duo-a-size: 78%; --duo-b-size: 88%; --duo-r-px: 3px; }
+.vc-orb.hidden { visibility: hidden; }
+.vc-orb.pulse { animation: orb-pulse 1.6s ease-in-out infinite alternate; }
+.vc-label { min-height: 28px; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 0 24px; font: 300 20px/1.4 var(--c-font); color: rgba(38, 48, 59, 0.75); text-align: center; }
+.vc-label.err { color: var(--error); }
+.vc-label .spin { width: 24px; height: 24px; animation: spin 0.9s linear infinite; }
+.vc-ctrls { position: relative; z-index: 2; height: 138px; flex-shrink: 0; padding: 32px 24px 0; display: flex; justify-content: space-between; align-items: flex-start; animation: cc-bottom-in 220ms ease-out both; }
+.vc-pill {
+  display: flex; align-items: center; justify-content: center; gap: 10px; padding: 12px; border-radius: 100px; background: #fff;
+  filter: drop-shadow(0 0 3.5px #a3ece7); font: 300 16px/normal var(--c-font); color: #1a1a32; white-space: nowrap;
+}
+.vc-pill.grey { filter: drop-shadow(0 0 3.5px #cacaca); }
+.vc-pill.active { font-weight: 590; color: #de761e; }
+
+/* Chooser card C: warm orange wash, matching the Talk / Mic accent */
+.ch-C { background: linear-gradient(100deg, #e4f8f6 0%, #fff6ea 46%, #fbd9b3 100%); }
+
+/* Voice C → Chat C transitions (no Figma frame for the choreography; flag for design review).
+   Type: caption shows a loader, then an in-place morph (no swoosh). X: cyan/peach swoosh (drawn by App.tsx). */
+@keyframes orb-spin-out { to { opacity: 0; transform: scale(0) rotate(200deg); } }
+@keyframes glow-in-left { from { opacity: 0; transform: translateX(-55%); } }
+@keyframes glow-in-right { from { opacity: 0; transform: translateX(55%); } }
+/* Chat -> Voice (Talk): swoosh like Variant B; voice bars and orb settle in underneath. */
+.tr-C.tr-exit.tr-chat-voice > .scr { animation: fade-out 280ms ease forwards; }
+.tr-C.tr-enter.tr-chat-voice > .scr { animation: fade-in 320ms ease both; }
+.tr-C.tr-enter.tr-chat-voice .vc-head { animation: bar-in-top 450ms var(--ease-out) both; }
+.tr-C.tr-enter.tr-chat-voice .vc-ctrls { animation: bar-in-bottom 450ms var(--ease-out) both; }
+.tr-C.tr-enter.tr-chat-voice .vc-label { animation: blur-in 700ms ease-out 450ms both; }
+.tr-C.tr-enter.tr-chat-voice .vc-orb { animation: orb-settle 750ms var(--overshoot) 300ms both; }
+.tr-C.tr-exit.tr-voice-chat.tr-src-type .vc-head { animation: bar-out-top 300ms var(--ease-in) forwards; }
+.tr-C.tr-exit.tr-voice-chat.tr-src-type .vc-ctrls { animation: bar-out-bottom 350ms var(--ease-in) forwards; }
+.tr-C.tr-exit.tr-voice-chat.tr-src-type .vc-transcript { animation: fade-out 300ms ease forwards; }
+.tr-C.tr-exit.tr-voice-chat.tr-src-type .vc-orb { animation: orb-spin-out 450ms var(--ease-in) forwards; }
+.tr-C.tr-exit.tr-voice-chat.tr-src-type .vc-label { animation: fade-out 250ms ease 200ms forwards; }
+.tr-C.tr-enter.tr-voice-chat.tr-src-type .cc-head { animation: bar-in-top 400ms var(--ease-out) both; }
+.tr-C.tr-enter.tr-voice-chat.tr-src-type .cc-comp { animation: bar-in-bottom 400ms var(--ease-out) both; }
+.tr-C.tr-enter.tr-voice-chat.tr-src-type .cc-thread { animation: fade-in 450ms ease 120ms both; }
+.tr-C.tr-enter.tr-voice-chat.tr-src-type .cc-glow-small { animation: glow-in-left 600ms var(--ease-out) both; }
+.tr-C.tr-enter.tr-voice-chat.tr-src-type .cc-glow-big { animation: glow-in-right 600ms var(--ease-out) both; }
+.tr-C.tr-exit.tr-voice-chat.tr-src-close > .scr { animation: fade-out 280ms ease forwards; }
+.tr-C.tr-enter.tr-voice-chat.tr-src-close > .scr { animation: fade-in 320ms ease both; }
+.tr-C.tr-exit.tr-voice-chat.tr-src-close .vc-head { animation: bar-out-top 300ms var(--ease-in) forwards; }
+.tr-C.tr-exit.tr-voice-chat.tr-src-close .vc-ctrls { animation: bar-out-bottom 300ms var(--ease-in) forwards; }
+.tr-C.tr-exit.tr-voice-chat.tr-src-close .vc-orb, .tr-C.tr-exit.tr-voice-chat.tr-src-close .vc-landing-orb { animation: orb-out 350ms var(--ease-in) forwards; }
+.tr-C.tr-exit.tr-voice-chat.tr-src-close .vc-transcript { animation: fade-out 250ms ease forwards; }
+.tr-C.tr-enter.tr-voice-chat.tr-src-close .cc-head { animation: bar-in-top 400ms var(--ease-out) both; }
+.tr-C.tr-enter.tr-voice-chat.tr-src-close .cc-comp { animation: bar-in-bottom 400ms var(--ease-out) both; }
+.tr-C.tr-enter.tr-voice-chat.tr-src-close .cc-thread { animation: fade-in 450ms ease 100ms both; }
+
+/* Voice C paused: a blue glow drifts in from the left and a yellow from the right, both very slow;
+   they breathe while paused and ease back out on resume. No Figma frame for the motion; flag it. */
+.vc-pglow { position: absolute; z-index: 0; bottom: -120px; width: 620px; height: 560px; opacity: 0; pointer-events: none; transition: transform 1800ms var(--ease-out), opacity 1600ms ease; }
+.vc-pglow.blue { left: -140px; bottom: -40px; transform: translateX(-45%); }
+.vc-pglow.yellow { right: -220px; transform: translateX(45%); }
+.vc.is-paused .vc-pglow { opacity: 1; transform: translateX(0); }
+.vc-pglow i { display: block; width: 100%; height: 100%; border-radius: 50%; filter: blur(8px); }
+.vc-pglow.blue i { background: radial-gradient(closest-side, rgba(190,245,241,0.9), rgba(190,245,241,0.45) 55%, rgba(190,245,241,0)); }
+.vc-pglow.yellow i { background: radial-gradient(closest-side, rgba(254,237,159,0.9), rgba(254,237,159,0.45) 55%, rgba(254,237,159,0)); }
+.vc.is-paused .vc-pglow i { animation: pause-breathe 6.5s ease-in-out infinite alternate; }
+@keyframes pause-breathe { from { transform: scale(0.95); opacity: 0.8; } to { transform: scale(1.1); opacity: 1; } }

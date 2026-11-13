@@ -11,9 +11,11 @@ type Props = {
   onDenied(): void;
   /** Variant accent: teal (A) or orange (B, no Figma frame: restyled from A). */
   accent?: 'teal' | 'orange';
+  /** Variant C skin (Figma 681:2443): red bin, 42px orange tick. */
+  skin?: 'c';
 };
 
-export function Recorder({ onDone, onDenied, accent = 'teal' }: Props) {
+export function Recorder({ onDone, onDenied, accent = 'teal', skin }: Props) {
   const color = accent === 'orange' ? '#DE761E' : '#4999A5';
   const [elapsed, setElapsed] = useState(0);
   const [levels, setLevels] = useState<number[]>(() => Array(BARS).fill(0));
@@ -148,10 +150,10 @@ export function Recorder({ onDone, onDenied, accent = 'teal' }: Props) {
   const time = `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
 
   return (
-    <div className="recorder">
+    <div className={`recorder${skin ? ` rec-${skin}` : ''}`}>
       <div className="rec-pill">
         <button className="icon24" onClick={() => api.current?.finish(true)} aria-label="Discard recording">
-          <img src="/assets/trash.svg" width={24} height={24} alt="" />
+          <img src={skin === 'c' ? '/assets/c/trash.svg' : '/assets/trash.svg'} width={24} height={24} alt="" />
         </button>
         <div className="rec-mid">
           <span className="rec-time">{time}</span>
@@ -170,7 +172,7 @@ export function Recorder({ onDone, onDenied, accent = 'teal' }: Props) {
           )}
         </div>
         <button className="rec-ok" style={{ background: color }} onClick={() => api.current?.finish(false)} disabled={busy} aria-label="Stop and transcribe">
-          <img src="/assets/check.svg" width={18} height={20} alt="" />
+          <img src={skin === 'c' ? '/assets/c/check.svg' : '/assets/check.svg'} width={18} height={20} alt="" />
         </button>
       </div>
     </div>

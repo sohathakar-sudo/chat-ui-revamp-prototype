@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react';
 import { store } from '../lib/store';
+import { DuoOrb } from '../components/DuoOrb';
 
 // Rebuilt from the rendered frame of the Figma code layer (269-1307); see README "Design notes".
 export function LoaderArt() {
+  // Variant C: the Wysa home orb, rotating and breathing, replaces the plain blob.
+  const orbC = store.get().variant === 'C';
   return (
     <>
       <img className="mark" src="/assets/wysa-wordmark@2x.png" alt="wysa" />
-      <div className="blob" />
+      {orbC ? <div className="blob-orb"><DuoOrb tone="cycle" /></div> : <div className="blob" />}
       <p className="label">Loading your safe corner...</p>
     </>
   );

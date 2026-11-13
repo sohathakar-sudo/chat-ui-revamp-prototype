@@ -101,6 +101,9 @@ export function useChat() {
       if (!voiceSupported()) { setVoiceTip('speak'); return; }
       stopMessagePlayback();
       unlockAudio();
+      // Variant C: resume listening if the user has already spoken/typed; else land on "Tap to start".
+      const s = store.get();
+      store.set({ voiceEntry: s.variant === 'C' ? (s.messages.some((m) => m.role === 'user') ? 'talk-resume' : 'talk-fresh') : null });
       store.enterVoice();
     },
     recorderDenied() { setRecording(false); setNotice(MIC_DENIED); },

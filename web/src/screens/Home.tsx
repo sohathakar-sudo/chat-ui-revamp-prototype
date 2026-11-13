@@ -9,6 +9,7 @@ import { config } from '../../../shared/config';
 export function Home() {
   const transition = useStore((s) => s.homeTransition);
   const variant = useStore((s) => s.variant);
+  const bHome = variant === 'B' || variant === 'C'; // Variant C reuses Variant B's Home
   const [tip, setTip] = useState(false);
 
   useEffect(() => {
@@ -32,8 +33,8 @@ export function Home() {
   };
 
   return (
-    <div className={`scr home${variant === 'B' ? ' home-b' : ''}`}>
-      {variant === 'B' ? <HomeB startVoice={startVoice} tip={tip} /> : <HomeA startVoice={startVoice} tip={tip} />}
+    <div className={`scr home${bHome ? ' home-b' : ''}`}>
+      {bHome ? <HomeB startVoice={startVoice} tip={tip} /> : <HomeA startVoice={startVoice} tip={tip} />}
       {transition && (
         <div className="to-home loader">
           <LoaderArt />
