@@ -852,7 +852,7 @@ p { margin: 0; }
 .cc-wysa { gap: 24px; }
 .cc-bubble { width: fit-content; max-width: 307px; margin-left: auto; padding: 12px 16px; border-radius: 20px 20px 4px 20px; background: var(--bubble); color: var(--navy); font: 400 16px/24px var(--c-font); text-align: left; white-space: pre-wrap; overflow-wrap: anywhere; }
 .chat-c .msg.user { display: block; }
-.cc-read { display: flex; align-items: center; gap: 10px; font: 400 12px/20px var(--c-font); color: #9194b9; }
+.cc-read { display: flex; align-items: center; gap: 10px; font: 400 12px/20px var(--c-font); color: #575b7f; }
 .cc-read.playing { animation: speaker-pulse 1s ease-in-out infinite; }
 .cc-comp { position: relative; z-index: 3; flex-shrink: 0; padding: 12px 12px 24px; animation: cc-bottom-in 220ms ease-out both; }
 .cc-card {
@@ -996,12 +996,12 @@ p { margin: 0; }
 
 /* Variant C: error message text sizing */
 .chat-c .failed {
-  font: 400 13px/20px var(--c-font);
-  color: rgba(26, 26, 50, 0.6);
+  font: 300 14px/1.4 var(--c-font);
+  color: var(--error);
   display: flex; gap: 4px; align-items: center; flex-wrap: wrap;
 }
 .chat-c .failed button {
-  font: 400 13px/20px var(--c-font);
+  font: 300 14px/1.4 var(--c-font);
   color: #de761e;
   text-decoration: none;
   padding: 0;
