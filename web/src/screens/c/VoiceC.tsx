@@ -46,13 +46,6 @@ export function VoiceC({ v }: { v: VoiceModel }) {
     if (el) el.scrollTop = el.scrollHeight;
   }, [shown.length, liveUser, spokenWords, phase]);
 
-  // Jump-to-latest chevron (Figma 708:8281): shown only while the transcript is scrolled up.
-  const [atBottom, setAtBottom] = useState(true);
-  const onScroll = () => {
-    const el = scroller.current;
-    if (el) setAtBottom(el.scrollHeight - el.scrollTop - el.clientHeight < 48);
-  };
-  const jumpLatest = () => scroller.current?.scrollTo({ top: scroller.current.scrollHeight, behavior: 'smooth' });
 
   const label = ready ? 'Tap to start' : caption?.text ?? '';
   // The Iteration-3 frames show the header icons inconsistently (Paused has neither, Speaking only
@@ -96,7 +89,7 @@ export function VoiceC({ v }: { v: VoiceModel }) {
         </div>
 
         <>
-            <div className="vc-transcript" ref={scroller} onScroll={onScroll}>
+            <div className="vc-transcript" ref={scroller}>
               {shown.map((m, i) =>
                 m.role === 'user' ? (
                   <p key={m.id} className="vc-bubble">{m.text}</p>
@@ -112,14 +105,9 @@ export function VoiceC({ v }: { v: VoiceModel }) {
               )}
               {liveUser && <p className="vc-bubble">{liveUser}</p>}
             </div>
-            {!atBottom && !ready && (
-              <button className="vc-jump" onClick={(e) => { e.stopPropagation(); jumpLatest(); }} aria-label="Jump to latest">
-                <img src="/assets/c/caret-down.svg" width={16} height={16} alt="" />
-              </button>
-            )}
             <div className="vc-orb-block">
               <div className={`vc-orb${paused ? ' hidden' : ''}${phase === 'thinking' ? ' pulse' : ''}`}>
-                <DuoOrb tone={ready ? 'cycle' : speaking ? 'speak' : 'listen'} />
+                <DuoOrb tone={ready ? 'cycle' : (speaking || phase === 'thinking') ? 'speak' : 'listen'} />
               </div>
               <p className={`vc-label${caption?.err ? ' err' : ''}`} role="status" aria-live="polite">
                 {leaving && trans?.source === 'type' ? (

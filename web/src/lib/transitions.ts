@@ -42,6 +42,8 @@ const T: Partial<Record<Variant, Partial<Record<TransKind, Timeline>>>> = {
   },
   // Variant C: only voice → chat is animated (Type = in-place morph after a loading caption; X = swoosh). Flag: no Figma frame.
   C: {
+    'home-chat': { press: 0, exit: 450, enter: 900, swoosh: 'ltr' },
+    'home-voice': { press: 0, exit: 550, enter: 1500, swoosh: 'ltr' },
     // Talk: same cyan/peach swoosh as Variant B. Flag: no Figma frame. (No home-voice: Speak stays as is.)
     'chat-voice': { press: 0, exit: 300, enter: 700, swoosh: 'ltr' },
     'voice-chat': { press: 700, exit: 450, enter: 600, swoosh: 'ltr' },

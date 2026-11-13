@@ -48,18 +48,16 @@ export function ChatC({ c }: { c: ChatModel }) {
       ) : (
         <div className="cc-comp">
           <div className="cc-card">
-            <label className="cc-field">
-              <textarea
-                ref={c.inputRef}
-                rows={1}
-                value={c.text}
-                placeholder="Write, or tap the mic to dictate"
-                onChange={(e) => c.onText(e.target.value)}
-                onKeyDown={c.onKeyDown}
-                enterKeyHint="send"
-                aria-label="Message"
-              />
-            </label>
+            <textarea
+              ref={c.inputRef}
+              rows={1}
+              value={c.text}
+              placeholder="Write, or tap the mic to dictate"
+              onChange={(e) => c.onText(e.target.value)}
+              onKeyDown={c.onKeyDown}
+              enterKeyHint="send"
+              aria-label="Message"
+            />
             {typing ? (
               <button className="cc-send" onClick={c.submit} disabled={c.replying || !c.online} aria-label="Send">
                 <img src="/assets/c/send.svg" width={24} height={24} alt="" />
