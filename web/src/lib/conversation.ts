@@ -1,5 +1,6 @@
 // Conversation engine: one shared conversation for text chat and voice mode.
 import { config, type ChatTurn } from '../../../shared/config';
+import { dummyReply, streamDummyReply } from '../../../shared/dummyScript';
 import { newId, store } from './store';
 
 export type ReplyHandle = {
@@ -52,6 +53,18 @@ export function requestReply(onDelta?: (full: string) => void): ReplyHandle {
         body: JSON.stringify({ messages }),
         signal: controller.signal,
       });
+      // No backend at all (static deploy): play the scripted dummy conversation locally.
+      if (!/json/.test(res.headers.get('content-type') ?? '')) {
+        const users = messages.filter((m) => m.role === 'user');
+        for await (const word of streamDummyReply(dummyReply(users.length, users.at(-1)?.content), controller.signal)) {
+          full += word;
+          store.updateMessage(messageId, { text: full, status: 'streaming' });
+          onDelta?.(full);
+        }
+        full = full.trim();
+        store.updateMessage(messageId, { text: full, status: 'done' });
+        return full;
+      }
       if (!res.ok || !res.body) throw new Error(`reply ${res.status}`);
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
