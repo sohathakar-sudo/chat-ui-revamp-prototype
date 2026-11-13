@@ -74,7 +74,7 @@ export function VoiceC({ v }: { v: VoiceModel }) {
           <div className="vc-actions">
             {showGear && (
               <button className="vc-icon" onClick={(e) => { e.stopPropagation(); leave('voices'); }} aria-label="Voice settings">
-                <img src="/assets/c/gear.svg" width={24} height={24} alt="" />
+                <img src="/assets/c/sliders.svg" width={42} height={42} alt="" />
               </button>
             )}
             {showMenu && (
