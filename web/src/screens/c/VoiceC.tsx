@@ -1,14 +1,15 @@
 // Variant C voice mode (Figma 681:2162 Landing, 681:2211 Speaking, 681:2248 Listening, 681:2294 Paused).
 // The transcript is the whole conversation: scrollable, plain text, not interactive.
 // Thinking, Reconnecting and Failed have no frame: built from these frames' parts (flag for design review).
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { config } from '../../../../shared/config';
 import { useStore } from '../../lib/store';
 import { splitWords } from '../../lib/speech';
 import type { VoiceError, VoiceModel } from '../../lib/useVoice';
 import { DuoOrb } from '../../components/DuoOrb';
 import { StatusBar } from '../../components/StatusBar';
-import { PaperLayer } from '../../components/PaperLayer';
+import { FadeScrollbar, JumpToLatest } from './ChatC';
+import { PaperLayer, useErrorPreview } from '../../components/PaperLayer';
 
 // Figma 778:7697 shows a dummy "Error state" string; this copy is a stand-in, flagged for design review.
 const ERROR_COPY: Record<VoiceError, string> = {
@@ -19,7 +20,9 @@ const ERROR_COPY: Record<VoiceError, string> = {
 };
 
 export function VoiceC({ v }: { v: VoiceModel }) {
-  const { phase, idleReason, resuming, caption, transcript, replyText, spokenWords, onScreenTap, toggleMute, leave, voiceError, retryError } = v;
+  const { phase, idleReason, resuming, caption, transcript, replyText, spokenWords, onScreenTap, toggleMute, leave, retryError } = v;
+  const errPreview = useErrorPreview();
+  const voiceError: VoiceError | null | undefined = v.voiceError ?? (errPreview ? 'network' : null);
   const messages = useStore((s) => s.messages);
   const trans = useStore((s) => s.trans);
   const leaving = trans?.kind === 'voice-chat' && trans.stage !== 'enter';
@@ -78,12 +81,48 @@ export function VoiceC({ v }: { v: VoiceModel }) {
   const words = splitWords(replyText);
   const liveUser = phase === 'listening' && transcript.text ? transcript.text + (transcript.partial ? '…' : '') : '';
 
-  // Keep the newest line in view.
+  // ChatGPT-style: a new user line is pinned to the top (just below the 32px fade); no follow-scroll during the reply.
   const scroller = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const el = scroller.current;
-    if (el) el.scrollTop = el.scrollHeight;
-  }, [shown.length, liveUser, spokenWords, phase]);
+  const lastUserEl = useRef<HTMLParagraphElement>(null);
+  let lastUserId = '';
+  shown.forEach((m) => { if (m.role === 'user') lastUserId = String(m.id); });
+  const userKey = liveUser ? 'live' : lastUserId;
+  const spacerEl = useRef<HTMLDivElement>(null);
+  const vcActive = useRef(false);
+  const prevKey = useRef<string | null>(null);
+  // Landing: user line 16px below the end of the 32px top fade (48px from the visible top).
+  const LAND = 48;
+  const landing = () => {
+    const el = scroller.current, ln = lastUserEl.current;
+    if (!el) return 0;
+    if (!vcActive.current || !ln) return el.scrollHeight - el.clientHeight;
+    return ln.getBoundingClientRect().top - el.getBoundingClientRect().top + el.scrollTop - LAND;
+  };
+  useLayoutEffect(() => {
+    const el = scroller.current, sp = spacerEl.current;
+    if (!el || !sp) return;
+    const fit = () => {
+      const ln = lastUserEl.current;
+      if (!vcActive.current || !ln) return;
+      const pb = parseFloat(getComputedStyle(el).paddingBottom) || 0;
+      const below = sp.getBoundingClientRect().top - ln.getBoundingClientRect().top;
+      const h = Math.max(0, Math.round((el.clientHeight - pb - LAND - below) * 100) / 100);
+      if (sp.style.height !== `${h}px`) sp.style.height = `${h}px`;
+    };
+    const prev = prevKey.current;
+    prevKey.current = userKey;
+    if (prev === null) { if (userKey) el.scrollTop = el.scrollHeight; }
+    else if (userKey && userKey !== prev && prev !== 'live') {
+      vcActive.current = true;
+      fit();
+      const ln = lastUserEl.current;
+      if (ln) el.scrollTo({ top: ln.getBoundingClientRect().top - el.getBoundingClientRect().top + el.scrollTop - LAND, behavior: 'smooth' });
+    } else fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(el);
+    Array.from(el.children).forEach((n) => { if (n !== sp) ro.observe(n); });
+    return () => ro.disconnect();
+  });
 
 
   const label = ready ? 'Tap to start' : caption?.text ?? '';
@@ -94,13 +133,13 @@ export function VoiceC({ v }: { v: VoiceModel }) {
   const showMenu = true;
 
   return (
-    <div ref={rootRef} className={`scr vc${ready ? ' vc-ready' : ''}${paused ? ' is-paused' : ''}`} onClick={voiceError ? undefined : onScreenTap}
+    <div ref={rootRef} className={`scr vc${ready ? ' vc-ready' : ''}${phase === 'thinking' ? ' is-thinking' : ''}${paused ? ' is-paused' : ''}`} onClick={voiceError ? undefined : onScreenTap}
       style={{ cursor: phase === 'idle' && !voiceError ? 'pointer' : undefined }}>
       <div className={`vc-glow vc-glow-bottom${mounted && ready ? ' on' : ''}`}><img src="/assets/c/v-glow-bottom-landing.svg" alt="" /></div>
       <PaperLayer />
       <div className={`vc-glow vc-glow-top${mounted && ready ? ' on' : ''}`}><img src="/assets/c/v-glow-top-landing.svg" alt="" /></div>
-      <div className={`vc-glow vc-glow-top speak${mounted && speaking ? ' on' : ''}`}><img src="/assets/c/v-glow-top-speak.svg" alt="" /></div>
-      <div className={`vc-glow vc-glow-bottom listen${mounted && !ready && !grey ? ' on' : ''}`}><img src="/assets/c/v-glow-bottom-listen.svg" alt="" /></div>
+      <div className={`vc-glow vc-glow-top speak${mounted && (speaking || phase === 'thinking') ? ' on' : ''}`}><img src="/assets/c/v-glow-top-speak.svg" alt="" /></div>
+      <div className={`vc-glow vc-glow-bottom listen${mounted && !ready && !grey && phase !== 'thinking' ? ' on' : ''}`}><img src="/assets/c/v-glow-bottom-listen.svg" alt="" /></div>
 
       <div className="vc-pglow blue"><i /></div>
       <div className="vc-pglow yellow"><i /></div>
@@ -120,7 +159,7 @@ export function VoiceC({ v }: { v: VoiceModel }) {
             {showMenu && (
               <div className="progress-wrap">
                 <button className="vc-icon" onClick={(e) => { e.stopPropagation(); setTip(true); }} aria-label="Menu">
-                  <img src="/assets/c/v-menu.svg" width={42} height={42} alt="" />
+                  <img src="/assets/c/fig-hamburger.svg" width={24} height={24} alt="" />
                 </button>
                 {tip && <div className="tooltip vc-tip" role="status">Work in progress</div>}
               </div>
@@ -132,7 +171,7 @@ export function VoiceC({ v }: { v: VoiceModel }) {
             <div className="vc-transcript" ref={scroller}>
               {shown.map((m, i) =>
                 m.role === 'user' ? (
-                  <p key={m.id} className="vc-bubble">{m.text}</p>
+                  <p key={m.id} className="vc-bubble" ref={String(m.id) === lastUserId && !liveUser ? lastUserEl : undefined}>{m.text}</p>
                 ) : speaking && i === lastWysa ? (
                   <p key={m.id} className="vc-line vc-wysa">
                     {words.slice(0, spokenWords).join(' ')}
@@ -143,8 +182,10 @@ export function VoiceC({ v }: { v: VoiceModel }) {
                   <p key={m.id} className="vc-line vc-wysa">{m.text}</p>
                 ),
               )}
-              {liveUser && <p className="vc-bubble">{liveUser}</p>}
+              {liveUser && <p className="vc-bubble" ref={lastUserEl}>{liveUser}</p>}
+              <div ref={spacerEl} className="vc-spacer" aria-hidden="true" />
             </div>
+            <FadeScrollbar scroller={scroller} />
             {voiceError ? (
               <div className="vc-orb-block vc-err-block">
                 <button className="vc-err" onClick={(e) => { e.stopPropagation(); retryError(); }} aria-label={ERROR_COPY[voiceError]}>
@@ -152,9 +193,11 @@ export function VoiceC({ v }: { v: VoiceModel }) {
                 </button>
               </div>
             ) : (
-            <div className="vc-orb-block">
+            <div className={`vc-orb-block${!ready && !speaking && phase !== 'thinking' ? ' listen' : ''}`}>
               <div className={`vc-orb${paused ? ' hidden' : ''}${phase === 'thinking' ? ' pulse' : ''}`}>
-                <DuoOrb tone={ready ? 'cycle' : (speaking || phase === 'thinking') ? 'speak' : 'listen'} />
+                <div className="vc-orb-in">{phase === 'thinking'
+                  ? <img className="vc-orb-think" src="/assets/c/v-orb-think.svg" alt="" />
+                  : <DuoOrb tone={ready ? 'cycle' : speaking ? 'speak' : 'listen'} />}</div>
               </div>
               <p className={`vc-label${caption?.err ? ' err' : ''}`} role="status" aria-live="polite">
                 <>{caption?.spin && <img className="spin" src="/assets/spinner.svg" alt="" />}{label}</>
@@ -165,6 +208,7 @@ export function VoiceC({ v }: { v: VoiceModel }) {
       </div>
 
       <div className="vc-ctrls" onClick={(e) => e.stopPropagation()}>
+        <JumpToLatest scroller={scroller} landing={landing} className="vc-jump" />
         <button className={`vc-pill${grey ? ' grey' : ''}`} onClick={() => leave('chat', 'type')}>
           <img src="/assets/c/keyboard.svg" width={24} height={24} alt="" />Type
         </button>

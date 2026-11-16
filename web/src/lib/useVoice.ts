@@ -554,7 +554,7 @@ export function useVoice(variant: Variant) {
         if (variant === 'A') return { text: 'Tap anywhere to start', err: false, spin: false };
         return idleReason === 'timeout' ? { text: 'Tap to start', err: false, spin: false } : null;
       case 'listening': return { text: 'Listening', err: false, spin: false };
-      case 'thinking': return { text: 'Thinking…', err: false, spin: false };
+      case 'thinking': return { text: 'Thinking', err: false, spin: false };
       case 'speaking': return { text: 'Wysa Speaking', err: false, spin: false };
       case 'paused': return { text: 'Paused', err: false, spin: false };
       case 'reconnecting': return { text: 'Reconnecting', err: true, spin: true };

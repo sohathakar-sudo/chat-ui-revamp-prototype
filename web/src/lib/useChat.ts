@@ -42,7 +42,7 @@ export function useChat() {
   // Keep the newest message in view.
   useLayoutEffect(() => {
     const el = threadRef.current;
-    if (el) el.scrollTop = el.scrollHeight;
+    if (el && !el.dataset.manualScroll) el.scrollTop = el.scrollHeight;
   }, [messages]);
 
   useEffect(() => () => stopMessagePlayback(), []);

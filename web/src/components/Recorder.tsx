@@ -193,13 +193,13 @@ export function Recorder({ onDone, onDenied, accent = 'teal', skin }: Props) {
                 <img className="spin" src="/assets/spinner.svg" width={24} height={24} alt="" />
               </span>
             ) : (
-              <svg className="rec-wave" viewBox="0 0 200 24" aria-hidden>
+              <div className="rec-wave rec-wave-c" aria-hidden>
                 {levels.map((lv, i) => {
-                  const h = paused ? 4 : Math.max(4, Math.min(20, 4 + lv * 20));
-                  const x = 5 + i * 8;
-                  return <line key={i} x1={x} x2={x} y1={12 - h / 2} y2={12 + h / 2} stroke={color} strokeWidth={2} strokeLinecap="round" />;
+                  const base = [5, 12, 16, 20][i % 4];
+                  const h = paused ? 5 : Math.max(5, Math.min(base, 5 + lv * 20 * base / 20));
+                  return <i key={i} style={{ height: h, background: color }} />;
                 })}
-              </svg>
+              </div>
             )}
           </div>
           <div className="rec-actions">

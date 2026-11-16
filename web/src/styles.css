@@ -399,7 +399,7 @@ p { margin: 0; }
 .hb-hero {
   position: relative; width: 100%; height: 560px; flex-shrink: 0; overflow: hidden;
   display: flex; flex-direction: column; align-items: center; gap: 36px;
-  border-radius: 0 0 32px 32px; background: linear-gradient(to bottom, var(--b-bg) 64.554%, #a3ece7 100.82%);
+  border-radius: 0 0 32px 32px; background: linear-gradient(to bottom, #fffefc 15.446%, #fbf8f3 65.824%, #aae5ec 102.77%);
 }
 .hb-hero-glow { position: absolute; left: 50%; top: 322px; width: 560px; height: 178px; transform: translateX(-50%); }
 .hb-top { position: relative; width: 100%; padding: 0 16px; display: flex; flex-direction: column; align-items: center; gap: 24px; }
@@ -409,10 +409,10 @@ p { margin: 0; }
 .hb-orb-wrap { width: auto; height: auto; padding: 0; }
 .hb-orb { position: relative; display: block; width: 124px; height: 124px; overflow: hidden; }
 .hb-copy { display: flex; flex-direction: column; align-items: center; gap: 8px; line-height: 1.2; text-align: center; }
-.hb-copy h1 { margin: 0; font: 700 34px/1.2 var(--manrope); letter-spacing: 0.34px; color: var(--b-ink); }
-.hb-copy p { width: 350px; max-width: 100%; font: 400 24px/1.2 var(--manrope); color: var(--secondary); }
+.hb-copy h1 { margin: 0; font: 700 34px/1.2 var(--sf); letter-spacing: 0.34px; color: var(--b-ink); }
+.hb-copy p { width: 350px; max-width: 100%; font: 400 24px/1.2 var(--sf); color: #575b7f; }
 .hb-pills { width: 100%; display: flex; gap: 20px; padding: 24px 10px; }
-.hb-pill { flex: 1; height: 50px; padding: 10px; border-radius: 100px; background: #fff; filter: drop-shadow(0 0 3.5px rgba(80, 159, 170, 0.1)); font: 700 16px var(--manrope); color: var(--b-ink); }
+.hb-pill { flex: 1; height: 50px; padding: 10px; border-radius: 100px; background: #fff; filter: drop-shadow(0 0 3.5px rgba(80, 159, 170, 0.1)); display: flex; align-items: center; justify-content: center; gap: 10px; font: 700 20px var(--sf); color: var(--b-ink); }
 .hb-pill.speak { color: var(--b-orange); }
 .hb-today { background: var(--b-bg); }
 
@@ -849,13 +849,13 @@ p { margin: 0; }
    input card (z-3). The thread is cut off at the bottom so scrolling messages disappear cleanly
    behind the input box instead of riding over the gradient. */
 .cc-thread {
-  padding: 0 24px 72px 30px; overflow-anchor: none;
+  padding: 0 24px 72px 30px; overflow-anchor: none; scrollbar-width: none;
   -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 60px), transparent 100%);
           mask-image: linear-gradient(to bottom, #000 calc(100% - 60px), transparent 100%);
 }
 .chat-c .msg + .msg { margin-top: 24px; }
 .chat-c .msg.user + .msg.user { margin-top: 24px; }
-.cc-wysa .text { font: 400 16px/24px var(--c-font); color: #0A0A24; }
+.cc-wysa .text { font: 400 16px/normal var(--c-font); color: #0A0A24; }
 .cc-wysa { gap: 24px; }
 .cc-bubble { width: fit-content; max-width: 307px; margin-left: auto; padding: 12px 16px; border-radius: 20px 20px 4px 20px; background: var(--bubble); color: var(--navy); font: 400 16px/24px var(--c-font); text-align: left; white-space: pre-wrap; overflow-wrap: anywhere; }
 .chat-c .msg.user { display: block; }
@@ -863,7 +863,7 @@ p { margin: 0; }
 .cc-read.playing { animation: speaker-pulse 1s ease-in-out infinite; }
 .cc-comp { position: relative; z-index: 3; flex-shrink: 0; padding: 12px 12px 24px; animation: cc-bottom-in 220ms ease-out both; }
 .cc-card {
-  position: relative; display: grid; grid-template-rows: auto 42px; row-gap: 12px; padding: 16px 12px;
+  position: relative; display: grid; grid-template-rows: auto 42px; row-gap: 8px; padding: 16px 12px;
   background: #fff; border-radius: 16px; filter: drop-shadow(0 4px 2px rgba(0,0,0,0.05));
   transition: border-radius 320ms cubic-bezier(.22,.7,.2,1), padding 320ms cubic-bezier(.22,.7,.2,1), row-gap 320ms cubic-bezier(.22,.7,.2,1), grid-template-rows 320ms cubic-bezier(.22,.7,.2,1);
 }
@@ -885,10 +885,14 @@ p { margin: 0; }
 .cc-row .tooltip { top: auto; bottom: calc(100% + 10px); right: 0; }
 .cc-row .tooltip::before { top: auto; bottom: -6px; border-bottom: 0; border-top: 6px solid var(--ink); }
 /* Typing (778:7480 single line = pill 100px; 778:7452 multiple lines = 28px). Same box morphs, no remount. */
-.is-typing .cc-card { grid-template-rows: auto 0px; row-gap: 0; padding: 12px; border-radius: 100px; }
-.is-typing.is-multi .cc-card { border-radius: 28px; }
-.is-typing .cc-card textarea { padding: 11px 12px; line-height: 24px; width: calc(100% - 46px); align-self: end; }
-.is-typing .cc-row { opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 160ms ease-out, visibility 0s 160ms; }
+.is-typing .cc-card textarea { width: calc(100% - 46px); }
+.cc-plus img { margin: -7px; max-width: none; flex: none; }
+.cc-plus { width: 42px; height: 42px; margin-right: auto; display: flex; align-items: center; justify-content: center; border-radius: 100px; }
+.cc-row .cc-plus-tip { right: auto; left: 0; }
+.cc-row .cc-plus-tip::before { right: auto; left: 12px; }
+.cc-talk, .cc-mic { transition: opacity 160ms ease-out, visibility 0s; }
+.is-typing .cc-talk, .is-typing .cc-mic { opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 160ms ease-out, visibility 0s 160ms; }
+.cc-send { z-index: 2; } /* sits above .cc-row, which overlaps it */
 .cc-send {
   position: absolute; right: 12px; bottom: 12px; width: 46px; height: 46px; display: flex; align-items: center; justify-content: center; padding: 10px;
   border-radius: 100px; background: #de761e; opacity: 0; visibility: hidden; transform: scale(0.8);
@@ -916,10 +920,12 @@ p { margin: 0; }
 /* Paper texture (Figma 778:8471): bottom layer, below the glows; toggled by html[data-paper] (desktop-only button) */
 .paper-layer { display: none; position: absolute; left: -252.5px; top: 50%; width: 917px; height: 917px; transform: translateY(-50%); object-fit: cover; opacity: 0.4; mix-blend-mode: darken; pointer-events: none; z-index: 0; max-width: none; }
 html[data-paper="on"] .paper-layer { display: block; }
-.paper-toggle { display: none; }
+.paper-toggle, .err-toggle { display: none; }
+.home-b > .paper-layer { z-index: 1; }
 @media (min-width: 501px) {
-  .paper-toggle { display: block; position: fixed; right: 20px; top: 20px; z-index: 50; padding: 10px 14px; border-radius: 100px; background: #fff; color: #0a0a24; font: 500 13px/1 -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; box-shadow: 0 2px 8px rgba(0,0,0,0.15); cursor: pointer; }
-  .paper-toggle[aria-pressed="true"] { background: #0a0a24; color: #fff; }
+  .paper-toggle, .err-toggle { display: block; position: fixed; right: 20px; top: 20px; z-index: 50; padding: 10px 14px; border-radius: 100px; background: #fff; color: #0a0a24; font: 500 13px/1 -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; box-shadow: 0 2px 8px rgba(0,0,0,0.15); cursor: pointer; }
+  .err-toggle { top: 64px; }
+  .paper-toggle[aria-pressed="true"], .err-toggle[aria-pressed="true"] { background: #0a0a24; color: #fff; }
 }
 @keyframes cc-bottom-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
 
@@ -946,29 +952,29 @@ html[data-paper="on"] .paper-layer { display: block; }
 .vc-icon { width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; }
 .vc .progress-wrap { position: relative; }
 .vc-tip { top: 48px; right: 0; }
-.vc-start { flex: 1; min-height: 0; max-height: 596px; padding: 24px 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 36px; }
-.vc-start-title { font: 300 24px/normal var(--c-font); color: #0A0A24; text-align: center; }
-.vc-landing-orb { position: relative; width: 190px; height: 190px; flex-shrink: 0; overflow: hidden; }
-.vc-landing-orb .duo { --duo-a-size: 74%; --duo-b-size: 84%; --duo-r-px: 5px; }
 /* Whole conversation: scrolls, but nothing in it is tappable */
-.vc-transcript { flex: 1; min-height: 0; padding-bottom: 24px; margin-right: -14px; padding-right: 14px; display: flex; flex-direction: column; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(60, 63, 88, 0.25) transparent; user-select: none; -webkit-user-select: none; }
+.vc-transcript { flex: 1; min-height: 0; padding-bottom: 24px; margin-right: -14px; padding-right: 14px; display: flex; flex-direction: column; overflow-y: auto; scrollbar-width: none; user-select: none; -webkit-user-select: none; }
 /* Soft fade where the transcript scrolls under the top bar and orb block (no hard cutoff). */
 .vc-transcript { -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 32px, #000 calc(100% - 48px), transparent 100%); mask-image: linear-gradient(to bottom, transparent 0, #000 32px, #000 calc(100% - 48px), transparent 100%); padding-top: 16px; }
-.vc-transcript::-webkit-scrollbar { width: 6px; }
-.vc-transcript::-webkit-scrollbar-thumb { background: rgba(60, 63, 88, 0.25); border-radius: 100px; }
+.vc-transcript::-webkit-scrollbar { display: none; }
 /* User lines stay in blue bubbles (overrides Figma 708:7706, which shows plain text). Flag for design review. */
-.vc-bubble { width: fit-content; max-width: 307px; margin: 8px 0 8px auto; padding: 12px 16px; border-radius: 20px 20px 4px 20px; background: var(--bubble); color: var(--navy); font: 400 16px/24px var(--c-font); text-align: left; white-space: pre-wrap; overflow-wrap: anywhere; }
+.vc-spacer { flex: 0 0 auto; height: 0; }
 .vc-line { padding: 10px 0; font: 400 16px/24px var(--c-font); color: #0A0A24; white-space: pre-wrap; overflow-wrap: anywhere; }
 .vc-wysa { width: 354px; max-width: 100%; }
 .vc-wysa .later { color: #b1b4ce; }
 .vc-user { text-align: right; margin-top: 4px; }
+.vc-bubble { width: fit-content; max-width: 307px; margin: 8px 0 8px auto; padding: 12px 16px; border-radius: 20px 20px 4px 20px; background: var(--bubble); color: var(--navy); font: 400 16px/24px var(--c-font); text-align: left; white-space: pre-wrap; overflow-wrap: anywhere; }
 .vc-wysa + .vc-wysa { margin-top: 4px; }
-.vc-orb-block { height: 178px; flex-shrink: 0; margin: 0 -24px; padding: 24px 0; display: flex; flex-direction: column; align-items: center; justify-content: space-between; }
+.vc-orb-block { height: 178px; flex-shrink: 0; margin: 0 -24px; padding: 24px 0 0; display: flex; flex-direction: column; align-items: center; justify-content: space-between; }
+.vc-orb-block.listen { justify-content: flex-start; gap: 12px; }
 .vc-orb { position: relative; width: 100px; height: 100px; flex-shrink: 0; }
+.vc-orb-in { position: absolute; left: 50%; bottom: 0; width: 100px; height: 100px; transform: translateX(-50%); transition: width 400ms ease, height 400ms ease, bottom 400ms ease; }
+.vc-ready .vc-orb-in { width: 190px; height: 190px; bottom: 206px; } /* Figma 778:7508: orb centred at ~y412 of 917; "Tap to start" stays in the caption slot. */
 .vc-orb .duo { --duo-a-size: 78%; --duo-b-size: 88%; --duo-r-px: 3px; }
+.vc-ready .vc-orb .duo { --duo-a-size: 74%; --duo-b-size: 84%; --duo-r-px: 5px; }
 .vc-orb.hidden { visibility: hidden; }
 .vc-orb.pulse { animation: orb-pulse 1.6s ease-in-out infinite alternate; }
-.vc-label { min-height: 28px; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 0 24px; font: 300 16px/1.4 var(--c-font); color: rgba(38, 48, 59, 0.75); text-align: center; }
+.vc-label { min-height: 44.8px; display: flex; align-items: flex-start; justify-content: center; gap: 10px; padding: 0 24px; font: 300 16px/1.4 var(--c-font); color: rgba(60, 63, 88, 0.75); text-align: center; }
 .vc-label.err { color: var(--error); }
 .vc-label .spin { width: 24px; height: 24px; animation: spin 0.9s linear infinite; }
 .vc-err-block { justify-content: flex-end; padding: 0 0 4px; }
@@ -978,8 +984,10 @@ html[data-paper="on"] .paper-layer { display: block; }
 .scr.vc .vc-main, .scr.vc .vc-head, .scr.vc .vc-orb-block, .scr.vc .vc-ctrls { background: transparent; box-shadow: none; backdrop-filter: none; }
 .vc-pill {
   display: flex; align-items: center; justify-content: center; gap: 10px; padding: 12px; border-radius: 100px; background: #fff;
-  filter: drop-shadow(0 0 3.5px #a3ece7); font: 400 16px/normal var(--c-font); color: #0A0A24; white-space: nowrap;
+  filter: drop-shadow(0 0 3.5px #cacaca); font: 400 16px/normal var(--c-font); color: #0A0A24; white-space: nowrap;
 }
+.vc-ctrls .vc-pill:first-child { width: 100px; }
+.vc-ctrls .vc-pill:last-child { width: 104px; }
 .vc-pill.grey { filter: drop-shadow(0 0 3.5px #cacaca); }
 .vc-pill.active { font-weight: 590; color: #de761e; }
 
@@ -1077,3 +1085,19 @@ html[data-paper="on"] .paper-layer { display: block; }
   text-decoration: none;
   padding: 0;
 }
+.rec-c .rec-wave-c { display: flex; align-items: center; justify-content: space-between; }
+.rec-c .rec-wave-c i { display: block; flex: none; width: 2px; border-radius: 100px; transition: height 80ms linear; }
+
+/* Overlay scrollbar + Jump to latest (no Figma frames: design review). */
+.fade-sb { position: absolute; z-index: 2; width: 3px; height: 0; border-radius: 100px; background: rgba(10, 10, 36, 0.25); opacity: 0; transition: opacity 300ms ease; pointer-events: none; }
+.jump-latest { position: absolute; left: 50%; width: 56px; height: 56px; padding: 0; border: 0; background: none; cursor: pointer; opacity: 0; transform: translateX(-50%) scale(0.85); pointer-events: none; transition: opacity 160ms ease, transform 160ms ease; -webkit-tap-highlight-color: transparent; }
+.jump-latest.on { opacity: 1; transform: translateX(-50%) scale(1); pointer-events: auto; }
+.jump-latest img { display: block; }
+.cc-jump { bottom: calc(100% - 7px); }
+.vc-jump { bottom: calc(100% - 27px); }
+
+/* Voice Thinking (Figma 789:9039): flat #FBF8F3 bg, Thinking orb asset, top glow slides down 250px→0 over 200ms ease-out. */
+.scr.vc.is-thinking { background: #FBF8F3; }
+.vc-orb-think { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.is-thinking .vc-glow-top.speak.on > img { animation: vc-think-glow-in 200ms ease-out both; }
+@keyframes vc-think-glow-in { from { transform: translateY(250px); } /* parent is rotated 180deg, so +250 local = 250px above on screen */ to { transform: none; } }

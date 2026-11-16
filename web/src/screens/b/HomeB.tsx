@@ -3,12 +3,14 @@ import { config } from '../../../../shared/config';
 import { store } from '../../lib/store';
 import { HomeStatusBar } from '../../components/StatusBar';
 import { DuoOrb } from '../../components/DuoOrb';
+import { PaperLayer } from '../../components/PaperLayer';
 import type { HomeProps } from '../a/HomeA';
 
 export function HomeB({ startVoice, tip }: HomeProps) {
   return (
     <>
-      <div className="hb-hero" onClick={() => startVoice()}>
+      <PaperLayer />
+      <div className="hb-hero">
         <img className="hb-hero-glow" src="/assets/b/home-hero-glow.svg" alt="" />
         <div className="hb-top">
           <HomeStatusBar />
@@ -20,9 +22,9 @@ export function HomeB({ startVoice, tip }: HomeProps) {
         <div className="hb-body">
           <div className="hb-center">
             <div className="orb-btn hb-orb-wrap">
-              <button className="hb-orb" onClick={(e) => { e.stopPropagation(); startVoice(); }} aria-label="Talk to Wysa">
+              <div className="hb-orb" style={{ cursor: 'default' }}>
                 <DuoOrb tone="cycle" />
-              </button>
+              </div>
               {tip && <div className="tooltip home-tip">Voice isn't supported in this browser.</div>}
             </div>
             <div className="hb-copy">
@@ -31,8 +33,8 @@ export function HomeB({ startVoice, tip }: HomeProps) {
             </div>
           </div>
           <div className="hb-pills">
-            <button className="hb-pill" onClick={(e) => { e.stopPropagation(); store.go('chat', 'chat'); }}>Chat</button>
-            <button className="hb-pill speak" onClick={(e) => { e.stopPropagation(); startVoice('speak'); }}>Speak</button>
+            <button className="hb-pill" onClick={(e) => { e.stopPropagation(); store.go('chat', 'chat'); }}><img src="/assets/c/home-chat-icon.svg" width={20.625} height={14.625} alt="" />Chat</button>
+            <button className="hb-pill speak" onClick={(e) => { e.stopPropagation(); startVoice('speak'); }}><img src="/assets/c/home-speak-waveform.svg" width={20} height={20} alt="" />Speak</button>
           </div>
         </div>
       </div>
@@ -60,7 +62,7 @@ export function HomeB({ startVoice, tip }: HomeProps) {
       </div>
 
       <nav className="bottom-nav" aria-hidden>
-        <div className="tab on"><img src="/assets/nav-home.svg" alt="" />Home</div>
+        <div className="tab on"><img src="/assets/c/fig-nav-home-heart.svg" alt="" />Home</div>
         <div className="tab"><img src="/assets/nav-therapist.svg" alt="" />Therapist</div>
         <div className="tab"><span className="blocks"><span className="grid"><i /><i /><i /><i /></span></span>Self-Care</div>
         <div className="tab"><img src="/assets/nav-progress.svg" alt="" />Progress</div>
