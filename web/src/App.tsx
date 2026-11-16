@@ -6,6 +6,7 @@ import { Chat } from './screens/Chat';
 import { Voice } from './screens/Voice';
 import { ChooseVoice } from './screens/ChooseVoice';
 import { ChooseVariant } from './screens/ChooseVariant';
+import { PaperToggle } from './components/PaperLayer';
 import { SWOOSH_MS, transClass } from './lib/transitions';
 
 export function App() {
@@ -35,6 +36,7 @@ export function App() {
 
   return (
     <div className="stage">
+      <PaperToggle />
       <div className="device">
         <div className="screen">
           <div className={`scr-wrap ${transClass(trans)}`}>
@@ -47,7 +49,7 @@ export function App() {
           </div>
           {overlay && <LoaderOverlay onDone={overlayDone} />}
           {swoosh && (
-            <div className={`swoosh ${swoosh}${trans!.variant === 'A' ? ' bw' : ''}`} key={trans!.kind} style={{ ['--swoosh-ms' as string]: `${trans!.variant === 'A' ? 900 : SWOOSH_MS}ms` }} aria-hidden>
+            <div className={`swoosh ${swoosh}${trans!.variant === 'A' ? ' bw' : ''}${trans!.variant === 'C' ? ' c' : ''}`} key={trans!.kind} style={{ ['--swoosh-ms' as string]: `${trans!.variant === 'A' ? 900 : SWOOSH_MS}ms` }} aria-hidden>
               {trans!.variant === 'A' ? <><i className="sw-blue" /><i className="sw-white" /></> : <><i className="sw-cyan" /><i className="sw-orange" /></>}
             </div>
           )}

@@ -10,7 +10,12 @@ import {
 
 export type Phase = 'idle' | 'listening' | 'thinking' | 'speaking' | 'paused' | 'reconnecting' | 'failed' | 'denied';
 
-export const MIC_DENIED = 'Wysa needs mic access to talk. Enable it in your browser settings.';
+/** Voice error kinds shown by Variant C (copy lives in VoiceC; flagged for design review). */
+export type VoiceError = 'mic' | 'silence' | 'network' | 'reply';
+/** How long Reconnecting lasts (offline / recognition network error) before it becomes a Connection lost error. */
+const RECONNECT_FAIL_MS = 8000;
+
+export const MIC_DENIED = 'I can\'t hear you. Allow mic access, then tap here to try again.';
 
 type Reply = {
   handle: ReplyHandle | null;
@@ -50,7 +55,10 @@ export function useVoice(variant: Variant) {
   const [spokenWords, setSpokenWords] = useState(0);
 
   const phaseRef = useRef<Phase>('idle');
-  const setPhase = (p: Phase) => { phaseRef.current = p; setPhaseState(p); };
+  const [voiceError, setVoiceError] = useState<VoiceError | null>(null);
+  // Any phase change clears the error; failure paths set it right after entering their phase.
+  const setPhase = (p: Phase) => { phaseRef.current = p; setPhaseState(p); setVoiceError(null); };
+  const fail = (p: Phase, kind: VoiceError) => { setPhase(p); setVoiceError(kind); };
 
   const mic = useRef<Mic | null>(null);
   const rec = useRef<Recognizer | null>(null);
@@ -133,7 +141,7 @@ export function useVoice(variant: Variant) {
     };
     const armTimers = () => {
       timers.current.noSpeech = window.setTimeout(() => {
-        if (!heard && myTurn === turnId.current) { stopListening(); setIdleReason('timeout'); setPhase('idle'); }
+        if (!heard && myTurn === turnId.current) { stopListening(); setIdleReason('timeout'); fail('idle', 'silence'); }
       }, config.voice.noSpeechTimeoutMs);
       timers.current.maxTurn = window.setTimeout(end, config.voice.maxTurnMs);
     };
@@ -145,7 +153,7 @@ export function useVoice(variant: Variant) {
         m = await openMic();
       } catch (e) {
         if (myTurn !== turnId.current) return;
-        setPhase(e instanceof MicDeniedError ? 'denied' : 'failed');
+        fail(e instanceof MicDeniedError ? 'denied' : 'failed', 'mic');
         return;
       }
       if (myTurn !== turnId.current) { m.close(); return; }
@@ -176,8 +184,8 @@ export function useVoice(variant: Variant) {
         onError: (code) => {
           if (myTurn !== turnId.current) return;
           stopListening();
-          setPhase(code === 'denied' ? 'denied' : code === 'network' ? 'reconnecting' : 'failed');
-          if (code === 'network') reconnectFor.current = 'offline';
+          if (code === 'network') { reconnectFor.current = 'offline'; setPhase('reconnecting'); }
+          else fail(code === 'denied' ? 'denied' : 'failed', 'mic');
         },
       });
       try { r.start(); } catch { /* already running */ }
@@ -225,6 +233,7 @@ export function useVoice(variant: Variant) {
     if (myTurn !== turnId.current || phaseRef.current !== 'listening') return;
     (['silence', 'noSpeech', 'maxTurn'] as const).forEach(clearTimer);
     let text = '';
+    let sttFailed = false;
     try {
       if (media.current) {
         const { recorder, chunks } = media.current;
@@ -236,9 +245,10 @@ export function useVoice(variant: Variant) {
       } else if (rec.current) {
         text = await rec.current.stop();
       }
-    } catch { text = ''; }
+    } catch { text = ''; sttFailed = !!media.current; }
     if (myTurn !== turnId.current) return;
     stopListening();
+    if (sttFailed) { fail('failed', 'network'); return; }
     text = text.trim();
     if (!text) { startListening(); return; }
     setTranscript({ text, partial: false });
@@ -316,7 +326,8 @@ export function useVoice(variant: Variant) {
         if (reply.current !== r) return;
         r.speech = null;
         r.ttsFailed = true;
-        pump();
+        stopSpeech();
+        fail('failed', 'reply');
       },
     });
   }, [finishReply]);
@@ -361,7 +372,7 @@ export function useVoice(variant: Variant) {
             if (phaseRef.current === 'reconnecting') beginReply();
           }, 1000 * attempts.current);
         } else {
-          setPhase('failed');
+          fail('failed', 'reply');
         }
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -418,6 +429,18 @@ export function useVoice(variant: Variant) {
       if (speaking) pump();
     }
     bumpInactivity();
+  };
+
+  /** Retry from an error caption: reopen the mic, or re-send the last user utterance if it has no reply. */
+  const retryError = () => {
+    const kind = voiceError;
+    if (!kind) return;
+    unlockAudio();
+    attempts.current = 0;
+    reply.current = freshReply();
+    const msgs = store.get().messages;
+    if ((kind === 'network' || kind === 'reply') && msgs[msgs.length - 1]?.role === 'user') beginReply();
+    else startListening(); // mic / silence / nothing to re-send: re-request the mic and listen
   };
 
   const onScreenTap = () => {
@@ -485,6 +508,32 @@ export function useVoice(variant: Variant) {
 
   useEffect(() => () => stopAll(), [stopAll]);
 
+  // Reconnecting caused by being offline / a recognition network error: if it doesn't recover, show Connection lost.
+  useEffect(() => {
+    if (phase !== 'reconnecting') return;
+    const t = window.setTimeout(() => {
+      if (phaseRef.current !== 'reconnecting' || (reconnectFor.current === 'reply' && navigator.onLine)) return;
+      stopListening(); clearTimer('retry');
+      fail('failed', 'network');
+    }, RECONNECT_FAIL_MS);
+    return () => window.clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase]);
+
+  // Dev-only: window.__voiceError('mic' | 'silence' | 'network' | 'reply') shows each error state.
+  const devFail = (k: VoiceError) => {
+    stopAll();
+    if (k === 'silence') setIdleReason('timeout');
+    fail(k === 'mic' ? 'denied' : k === 'silence' ? 'idle' : 'failed', k);
+  };
+  const devFailRef = useRef(devFail);
+  devFailRef.current = devFail;
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+    (window as any).__voiceError = (k: VoiceError) => devFailRef.current(k);
+    return () => { delete (window as any).__voiceError; };
+  }, []);
+
 
 
   // Dev-only design review: /?state=listening|thinking|speaking|paused|reconnecting|failed|denied|timeout
@@ -526,7 +575,7 @@ export function useVoice(variant: Variant) {
 
   return {
     phase, idleReason, resuming, caption, transcript, replyText, spokenWords, barEls, micLevel,
-    onScreenTap, toggleMute, muted, toggleMuted, leave,
+    voiceError, retryError, onScreenTap, toggleMute, muted, toggleMuted, leave,
   };
 }
 

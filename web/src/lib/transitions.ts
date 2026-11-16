@@ -4,7 +4,7 @@
 // Any screen change without a timeline for the current variant switches instantly.
 import { setNavigator, store, type Screen, type State, type Variant } from './store';
 
-export type TransKind = 'home-chat' | 'home-voice' | 'chat-voice' | 'voice-chat' | 'chat-home';
+export type TransKind = 'home-chat' | 'home-voice' | 'chat-voice' | 'voice-chat' | 'chat-home' | 'voice-home';
 export type Trans = {
   kind: TransKind;
   variant: Variant;
@@ -19,7 +19,7 @@ export type Trans = {
 
 type Timeline = { press: number; exit: number; enter: number; swoosh?: 'ltr' | 'rtl' };
 
-// Variant C has no entry on purpose: its screen changes are instant (no swoosh); see the Variant C block in styles.css.
+// Variant C animates only the entries listed in its block below; every other C screen change is instant.
 const T: Partial<Record<Variant, Partial<Record<TransKind, Timeline>>>> = {
   A: {
     // Hero expands into Chat; bars swap sideways; input rises; greeting types in.
@@ -40,13 +40,17 @@ const T: Partial<Record<Variant, Partial<Record<TransKind, Timeline>>>> = {
     'voice-chat': { press: 0, exit: 300, enter: 700, swoosh: 'ltr' },
     'chat-home': { press: 0, exit: 300, enter: 900, swoosh: 'rtl' },
   },
-  // Variant C: only voice → chat is animated (Type = in-place morph after a loading caption; X = swoosh). Flag: no Figma frame.
+  // Variant C: home→chat/voice, chat↔voice, voice→chat (Type = in-place morph after a loading caption; X = swoosh),
+  // and chat/voice → Home (A's settle-into-hero, no swoosh). Flag: no Figma frame.
   C: {
     'home-chat': { press: 0, exit: 450, enter: 900, swoosh: 'ltr' },
     'home-voice': { press: 0, exit: 550, enter: 1500, swoosh: 'ltr' },
     // Talk: same cyan/peach swoosh as Variant B. Flag: no Figma frame. (No home-voice: Speak stays as is.)
     'chat-voice': { press: 0, exit: 300, enter: 700, swoosh: 'ltr' },
     'voice-chat': { press: 700, exit: 450, enter: 600, swoosh: 'ltr' },
+    // Same timings as Variant A's chat-home: content drops/fades, the screen settles into the Home hero, Home content comes in.
+    'chat-home': { press: 0, exit: 650, enter: 1000 },
+    'voice-home': { press: 0, exit: 650, enter: 1000 },
   },
 };
 /** Variant B swoosh duration (matched to the reference recording): two soft glows sweep across

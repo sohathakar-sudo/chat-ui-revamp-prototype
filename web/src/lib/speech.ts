@@ -263,6 +263,7 @@ function speakBrowser(text: string, voice: VoiceName, opts: SpeakOpts): Speech {
   };
 
   speechSynthesis.cancel();
+  speechSynthesis.resume(); // Chrome can stay paused after a cancel, silently swallowing the next utterance
   // Safari drops an utterance queued in the same tick as cancel().
   setTimeout(() => { if (!stopped) speechSynthesis.speak(u); }, 0);
 
@@ -343,7 +344,10 @@ function speakServer(text: string, voice: VoiceName, opts: SpeakOpts): Speech {
 // ---------- message playback (speaker icon) ----------
 let playback: Speech | null = null;
 
-export function toggleMessagePlayback(messageId: string, text: string) {
+export function toggleMessagePlayback(messageId: string, fallbackText = '') {
+  // Always read the message the tapped control belongs to: resolve its text by id at tap time.
+  const text = store.get().messages.find((m) => m.id === messageId)?.text || fallbackText;
+  if (!text.trim()) return;
   const current = store.get().playingId;
   playback?.stop();
   playback = null;

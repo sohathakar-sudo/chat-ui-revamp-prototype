@@ -1,8 +1,8 @@
 /* Values come from the Figma Chat-Revamp file (nodes 523-6574, 526-8562). */
 :root {
-  --bg: #fffffd;
+  --bg: #FBF8F3;
   --ink: #3c3f58;          /* palettes/indigo/700 */
-  --navy: #1a1a32;
+  --navy: #0A0A24;
   --muted: #9194b9;        /* voice captions */
   --sub: #575b7f;
   --teal: #4999a5;
@@ -14,7 +14,7 @@
   --crisis: #fa7878;
   --cta: #bd5800;
   --secondary: #4e5355;
-  --primary: #1d1e1f;
+  --primary: #0A0A24;
   --sf: "SF Pro", "SF Pro Text", -apple-system, BlinkMacSystemFont, system-ui, "Helvetica Neue", Arial, sans-serif;
   --sf-display: "SF Pro Display", -apple-system, BlinkMacSystemFont, system-ui, "Helvetica Neue", Arial, sans-serif;
 }
@@ -54,21 +54,21 @@ p { margin: 0; }
 
 /* ---------- status bars (decorative) ---------- */
 .sb { height: 47px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; position: relative; z-index: 2; }
-.sb-time { font-family: "Inter", var(--sf); font-weight: 600; font-size: 15px; color: #000; }
+.sb-time { font-family: "Inter", var(--sf); font-weight: 600; font-size: 15px; color: #0A0A24; }
 .sb-icons { display: flex; gap: 5px; align-items: center; }
 .sb-home { height: 48px; flex-shrink: 0; position: relative; width: 100%; }
-.sb-home .t { position: absolute; left: 61.5px; top: 16px; transform: translateX(-50%); font-family: var(--sf-display); font-weight: 600; font-size: 18px; line-height: 1; letter-spacing: -0.36px; color: #000; }
+.sb-home .t { position: absolute; left: 61.5px; top: 16px; transform: translateX(-50%); font-family: var(--sf-display); font-weight: 600; font-size: 18px; line-height: 1; letter-spacing: -0.36px; color: #0A0A24; }
 .sb-home img { position: absolute; }
 
 /* ---------- loader ---------- */
-.loader { background: #fff; align-items: center; }
+.loader { background: var(--bg); align-items: center; }
 .loader .mark { position: absolute; top: 109px; left: 50%; width: 92px; height: 42px; transform: translateX(-50%); }
 .loader .blob {
   position: absolute; left: 50%; top: 417px; width: 106px; height: 106px; margin: -53px 0 0 -53px;
   border-radius: 50%; background: #dff5f7; filter: blur(1.5px);
   animation: loader-breathe 1.6s ease-in-out infinite alternate;
 }
-.loader .label { position: absolute; top: 659px; width: 100%; text-align: center; font-family: "DM Sans", var(--sf); font-size: 17px; color: #1a1a1a; }
+.loader .label { position: absolute; top: 659px; width: 100%; text-align: center; font-family: "DM Sans", var(--sf); font-size: 17px; color: #0A0A24; }
 .loader-out { z-index: 50; pointer-events: none; animation: fade-out 900ms cubic-bezier(.4, 0, .2, 1) forwards; }
 .loader-out .blob { animation: blob-open 900ms cubic-bezier(.4, 0, .2, 1) forwards; }
 .loader-out .mark, .loader-out .label { animation: fade-out 600ms ease forwards; }
@@ -76,7 +76,7 @@ p { margin: 0; }
 @keyframes fade-out { to { opacity: 0; } }
 
 /* Loader-to-Home transition: the loader's circle opens up and the frame dissolves into Home. */
-.to-home { position: absolute; inset: 0; z-index: 50; background: #fff; pointer-events: none; animation: fade-out 600ms ease 500ms forwards; }
+.to-home { position: absolute; inset: 0; z-index: 50; background: var(--bg); pointer-events: none; animation: fade-out 600ms ease 500ms forwards; }
 .to-home .mark { animation: fade-out 300ms ease forwards; }
 .to-home .label { animation: fade-out 300ms ease forwards; }
 .to-home .blob { animation: blob-open 900ms cubic-bezier(.6, 0, .3, 1) forwards; }
@@ -91,7 +91,7 @@ p { margin: 0; }
   border-radius: 0 0 32px 32px;
 }
 .hero-top { position: relative; width: 100%; padding: 0 16px; display: flex; flex-direction: column; align-items: center; gap: 32px; }
-.hero-top .veil { position: absolute; left: calc(50% + 0.5px); top: -1px; width: 417px; height: 145px; transform: translateX(-50%); background: rgba(255, 255, 255, 0.6); filter: blur(19.9px); }
+.hero-top .veil { position: absolute; left: calc(50% + 0.5px); top: -1px; width: 417px; height: 145px; transform: translateX(-50%); background: rgba(251, 248, 243, 0.6); filter: blur(19.9px); }
 .hero-head { position: relative; width: 375px; max-width: 100%; display: flex; align-items: center; justify-content: space-between; }
 .hero-head h1 { margin: 0; font-weight: 700; font-size: 34px; line-height: 1.2; letter-spacing: 0.34px; color: var(--navy); }
 .hero-head .right { display: flex; gap: 12px; align-items: center; }
@@ -153,7 +153,7 @@ p { margin: 0; }
 .tab img, .tab .blocks { width: 40px; height: 40px; }
 .blocks { position: relative; }
 .blocks .grid { position: absolute; left: calc(50% + 0.25px); top: 50%; transform: translate(-50%, -50%); width: 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
-.blocks .grid i { aspect-ratio: 1; border: 1px solid #000; border-radius: 1px; }
+.blocks .grid i { aspect-ratio: 1; border: 1px solid #0A0A24; border-radius: 1px; }
 
 /* ---------- chat ---------- */
 .chat { overflow: hidden; }
@@ -245,7 +245,7 @@ p { margin: 0; }
 .recorder { position: relative; z-index: 3; flex-shrink: 0; padding: 24px 16px; background: rgba(255, 255, 255, 0.2); display: flex; justify-content: center; }
 .rec-pill { width: 365px; max-width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 12px; background: #fff; border-radius: 100px; box-shadow: 0 4px 4px rgba(0, 0, 0, 0.08); }
 .rec-mid { display: flex; align-items: center; gap: 12px; min-width: 0; }
-.rec-time { width: 45px; font-size: 16px; line-height: 20px; color: #000; font-variant-numeric: tabular-nums; }
+.rec-time { width: 45px; font-size: 16px; line-height: 20px; color: #0A0A24; font-variant-numeric: tabular-nums; }
 .rec-wave { width: 200px; height: 24px; flex-shrink: 1; min-width: 0; overflow: hidden; }
 .rec-ok { width: 32px; height: 32px; border-radius: 100px; background: var(--teal); display: flex; align-items: center; justify-content: center; }
 .rec-ok:disabled { opacity: 0.5; cursor: default; }
@@ -339,7 +339,7 @@ p { margin: 0; }
 }
 .vcard.sel { background: var(--bubble); border-color: #d1d3d7; }
 .vcard .blobimg { position: absolute; z-index: -1; pointer-events: none; }
-.vcard .n { font-size: 20px; line-height: 24px; color: #000; white-space: nowrap; }
+.vcard .n { font-size: 20px; line-height: 24px; color: #0A0A24; white-space: nowrap; }
 .vcard .d { font-size: 16px; line-height: 20px; color: var(--sub); white-space: nowrap; }
 .vcard .tick { position: absolute; top: 13px; right: 15.5px; width: 12px; height: 12px; }
 .continue { height: 56px; padding: 12px 42px; border-radius: 100px; background: var(--teal); filter: drop-shadow(0 4px 2px rgba(0, 0, 0, 0.08)); color: #fff; font-weight: 590; font-size: 16px; flex-shrink: 0; }
@@ -348,9 +348,9 @@ p { margin: 0; }
    Variant B (Figma "Iteration 2", 531-8719)
    ====================================================================== */
 :root {
-  --b-bg: #fffefc;
+  --b-bg: #FBF8F3;
   --b-orange: #de761e;
-  --b-ink: #1a1a32;
+  --b-ink: #0A0A24;
   --pjs: "Plus Jakarta Sans", var(--sf);
   --manrope: "Manrope", var(--sf);
 }
@@ -538,7 +538,7 @@ p { margin: 0; }
 .vb-orb.pulse { animation: orb-pulse 1.6s ease-in-out infinite alternate; }
 @keyframes orb-pulse { from { transform: scale(0.94); opacity: 0.75; } to { transform: scale(1.04); opacity: 1; } }
 /* ---------- Choose a Voice B (532:10094) ---------- */
-.voices-b .cards { background: #fff; }
+.voices-b .cards { background: var(--b-bg); }
 .voices-b .vcard, .voices-b .vcard.sel { background: #def8f6; }
 .voices-b .continue {
   height: 44px; padding: 12px 52px; background: #fff; filter: drop-shadow(0 0 3.5px #cacaca);
@@ -605,6 +605,7 @@ p { margin: 0; }
   background: radial-gradient(closest-side, rgba(183, 238, 239, 0.95), rgba(183, 238, 239, 0.5) 55%, rgba(183, 238, 239, 0));
   animation: sw-cyan var(--swoosh-ms, 650ms) ease-out both;
 }
+.swoosh.c .sw-orange { background: radial-gradient(closest-side, rgba(254, 237, 159, 0.95), rgba(254, 237, 159, 0.55) 55%, rgba(254, 237, 159, 0)); } /* Variant C: on-brand yellow instead of peach/rust */
 @keyframes sw-orange {
   0% { left: -22%; top: 74%; opacity: 0; }
   18% { left: 4%; top: 71%; opacity: 1; }
@@ -817,17 +818,23 @@ p { margin: 0; }
 .scr.chat-c, .scr.vc {
   --c-font: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'SF Pro', system-ui, sans-serif;
   font-family: var(--c-font);
-  background: #fffefc;
-  color: #1a1a32;
+  background: #FBF8F3;
+  color: #0A0A24;
 }
+.scr.chat-c { background: #fbf8f3; } /* Figma Iteration 3 bg: white input card now reads against it */
+/* Glows and the paper layer are wider than the frame; clip (not hidden) so focus/scrollIntoView can never scroll the screen sideways. */
+.scr.chat-c, .scr.vc { overflow: clip; }
 .scr.chat-c button, .scr.chat-c textarea, .scr.vc button { font-family: inherit; }
 .scr.chat-c .tooltip, .scr.vc .tooltip { font-family: var(--c-font); }
 
 /* Loader: the Wysa home orb, rotating (inside DuoOrb) and breathing */
-.loader .blob-orb { position: absolute; left: 50%; top: 417px; width: 190px; height: 190px; margin: -95px 0 0 -95px; overflow: hidden; animation: loader-orb-breathe 2.4s ease-in-out infinite alternate; }
+.loader .blob-orb { position: absolute; left: 50%; top: 417px; width: 190px; height: 190px; margin: -95px 0 0 -95px; overflow: hidden; animation: loader-orb-breathe 3s ease-in-out infinite alternate; }
 .loader .blob-orb .duo { --duo-a-size: 74%; --duo-b-size: 84%; --duo-r-px: 5px; }
-.loader .blob-orb .duo-a { animation-duration: 12s, 32s; }
-.loader .blob-orb .duo-b { animation-duration: 14s, 32s; }
+/* Loader orb: slow drift; both circles share one yellow -> blue -> yellow cycle of 3s (soft ease, no holds) */
+.loader .blob-orb .duo { animation-duration: 6s; }
+.loader .blob-orb .duo-a { animation: duo-cw 30s linear infinite, loader-tint 3s ease-in-out infinite; }
+.loader .blob-orb .duo-b { animation: duo-ccw 36s linear infinite, loader-tint 3s ease-in-out infinite; }
+@keyframes loader-tint { 0%, 100% { --duo-c: #feed9f; } 50% { --duo-c: #bef5f1; } }
 .loader-out .blob-orb, .to-home .blob-orb { animation: blob-open 900ms cubic-bezier(.4, 0, .2, 1) forwards; }
 @keyframes loader-orb-breathe { from { transform: scale(0.88); } to { transform: scale(1.06); } }
 
@@ -848,44 +855,77 @@ p { margin: 0; }
 }
 .chat-c .msg + .msg { margin-top: 24px; }
 .chat-c .msg.user + .msg.user { margin-top: 24px; }
-.cc-wysa .text { font: 400 16px/24px var(--c-font); color: #1a1a32; }
+.cc-wysa .text { font: 400 16px/24px var(--c-font); color: #0A0A24; }
 .cc-wysa { gap: 24px; }
 .cc-bubble { width: fit-content; max-width: 307px; margin-left: auto; padding: 12px 16px; border-radius: 20px 20px 4px 20px; background: var(--bubble); color: var(--navy); font: 400 16px/24px var(--c-font); text-align: left; white-space: pre-wrap; overflow-wrap: anywhere; }
 .chat-c .msg.user { display: block; }
-.cc-read { display: flex; align-items: center; gap: 10px; font: 400 12px/20px var(--c-font); color: #575b7f; }
+.cc-read { display: flex; align-items: center; gap: 10px; font: 400 12px/20px var(--c-font); color: #575b7f; transition: color 280ms ease-out; }
 .cc-read.playing { animation: speaker-pulse 1s ease-in-out infinite; }
 .cc-comp { position: relative; z-index: 3; flex-shrink: 0; padding: 12px 12px 24px; animation: cc-bottom-in 220ms ease-out both; }
 .cc-card {
-  display: flex; flex-direction: column; gap: 8px; padding: 16px 12px 12px;
-  background: #fff; border-radius: 28px; filter: drop-shadow(0 4px 2px rgba(0,0,0,0.05));
+  position: relative; display: grid; grid-template-rows: auto 42px; row-gap: 12px; padding: 16px 12px;
+  background: #fff; border-radius: 16px; filter: drop-shadow(0 4px 2px rgba(0,0,0,0.05));
+  transition: border-radius 320ms cubic-bezier(.22,.7,.2,1), padding 320ms cubic-bezier(.22,.7,.2,1), row-gap 320ms cubic-bezier(.22,.7,.2,1), grid-template-rows 320ms cubic-bezier(.22,.7,.2,1);
 }
 .cc-card textarea {
-  width: 100%; display: block; border: 0; outline: 0; resize: none; padding: 0;
-  background: none; font: 400 16px/20px var(--c-font); color: #1a1a32; caret-color: #1a1a32;
+  box-sizing: border-box; width: 100%; display: block; border: 0; outline: 0; resize: none; padding: 8px 12px;
+  background: none; font: 400 16px/20px var(--c-font); color: #0a0a24; caret-color: #0a0a24;
   max-height: 144px; overflow-y: auto; scrollbar-width: none;
+  transition: height 280ms cubic-bezier(.22,.7,.2,1);
 }
 .cc-card textarea::placeholder { color: #b1b4ce; }
-.cc-row { position: relative; width: 100%; display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+.cc-row { position: relative; width: 100%; height: 42px; display: flex; align-items: center; justify-content: flex-end; gap: 8px; transition: opacity 220ms ease-out, visibility 0s; }
 .cc-talk {
   height: 42px; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 12px 16px;
   background: #fff; border: 1px solid #fff; border-radius: 140px; filter: drop-shadow(0 0 3px #cacaca);
   font: 400 16px/normal var(--c-font); color: #de761e; white-space: nowrap;
 }
-.cc-mic { width: 42px; height: 42px; flex-shrink: 0; }
+.cc-mic { width: 42px; height: 42px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; padding: 10px; border-radius: 100px; background: #de761e; }
 .cc-talk:disabled, .cc-mic:disabled, .cc-send:disabled { opacity: 0.5; cursor: default; }
 .cc-row .tooltip { top: auto; bottom: calc(100% + 10px); right: 0; }
 .cc-row .tooltip::before { top: auto; bottom: -6px; border-bottom: 0; border-top: 6px solid var(--ink); }
-/* Typing: one row, send button at the end (681:2135) */
-.is-typing .cc-card { flex-direction: row; align-items: flex-end; justify-content: space-between; padding: 12px; gap: 12px; }
-.is-typing .cc-card textarea { flex: 1; min-width: 0; line-height: 24px; }
-.cc-send { width: 46px; height: 46px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; padding: 10px; border-radius: 100px; background: #de761e; }
-/* Recorder skin (681:2443) */
-.rec-c .rec-ok { width: 42px; height: 42px; background: #de761e !important; }
-.rec-c { animation: cc-bottom-in 220ms ease-out both; }
+/* Typing (778:7480 single line = pill 100px; 778:7452 multiple lines = 28px). Same box morphs, no remount. */
+.is-typing .cc-card { grid-template-rows: auto 0px; row-gap: 0; padding: 12px; border-radius: 100px; }
+.is-typing.is-multi .cc-card { border-radius: 28px; }
+.is-typing .cc-card textarea { padding: 11px 12px; line-height: 24px; width: calc(100% - 46px); align-self: end; }
+.is-typing .cc-row { opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 160ms ease-out, visibility 0s 160ms; }
+.cc-send {
+  position: absolute; right: 12px; bottom: 12px; width: 46px; height: 46px; display: flex; align-items: center; justify-content: center; padding: 10px;
+  border-radius: 100px; background: #de761e; opacity: 0; visibility: hidden; transform: scale(0.8);
+  transition: opacity 220ms ease-out, transform 280ms cubic-bezier(.22,.7,.2,1), visibility 0s 220ms;
+}
+.is-typing .cc-send { opacity: 1; visibility: visible; transform: none; transition-delay: 0s; }
+.is-typing .cc-send:disabled { opacity: 0.5; }
+.is-typing .cc-read { color: #9194b9; }
+/* Error strip above the input (Figma 778:7986): 316px text block, SF Pro Light 14/1.4, #d26969, 12px vertical padding */
+.cc-error { position: relative; z-index: 3; flex-shrink: 0; width: 100%; display: flex; justify-content: center; padding: 12px 0; }
+.cc-error button { width: 316px; font: 300 14px/1.4 var(--c-font); color: #d26969; text-align: center; padding: 0; cursor: pointer; }
+/* Recorder skin (Figma 778:7906): 388 × 110 card, radius 28, p12, gap 12; row 1 time + waveform (h36), row 2 bin / Pause pill / tick.
+   #de761e on the tick is Figma's own value (also on the mic, send and Speak label). */
+.recorder.rec-c { width: 100%; padding: 12px 12px 24px; background: none; display: block; animation: cc-bottom-in 220ms ease-out both; }
+.rec-card { width: 100%; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px; padding: 12px; background: #fff; border-radius: 28px; filter: drop-shadow(0 4px 2px rgba(0,0,0,0.05)); }
+.rec-c .rec-top { display: flex; align-items: center; gap: 12px; height: 36px; }
+.rec-c .rec-time { width: auto; font: 400 16px/20px var(--c-font); color: #0a0a24; }
+.rec-c .rec-wave, .rec-c .rec-busy { flex: 1; width: auto; min-width: 0; height: 24px; padding: 4px 8px; box-sizing: border-box; }
+.rec-c .rec-actions { display: flex; align-items: center; gap: 12px; width: 100%; }
+.rec-c .rec-bin { width: 42px; height: 42px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: #fff; border-radius: 100px; filter: drop-shadow(0 0 3.5px #cacaca); }
+.rec-c .rec-pause { flex: 1; min-width: 0; height: 42px; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 12px 16px; background: #fff; border: 1px solid #fff; border-radius: 140px; filter: drop-shadow(0 0 3px #cacaca); font: 400 16px/normal var(--c-font); color: #3c3f58; white-space: nowrap; }
+.rec-c .rec-pause img { margin: 0 2px; }
+.rec-c .rec-pause:disabled { opacity: 0.5; cursor: default; }
+.rec-c .rec-ok { width: 42px; height: 42px; flex-shrink: 0; background: #de761e !important; }
+/* Paper texture (Figma 778:8471): bottom layer, below the glows; toggled by html[data-paper] (desktop-only button) */
+.paper-layer { display: none; position: absolute; left: -252.5px; top: 50%; width: 917px; height: 917px; transform: translateY(-50%); object-fit: cover; opacity: 0.4; mix-blend-mode: darken; pointer-events: none; z-index: 0; max-width: none; }
+html[data-paper="on"] .paper-layer { display: block; }
+.paper-toggle { display: none; }
+@media (min-width: 501px) {
+  .paper-toggle { display: block; position: fixed; right: 20px; top: 20px; z-index: 50; padding: 10px 14px; border-radius: 100px; background: #fff; color: #0a0a24; font: 500 13px/1 -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; box-shadow: 0 2px 8px rgba(0,0,0,0.15); cursor: pointer; }
+  .paper-toggle[aria-pressed="true"] { background: #0a0a24; color: #fff; }
+}
 @keyframes cc-bottom-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
 
 /* Voice C */
 .vc { overflow: hidden; justify-content: space-between; }
+.scr.vc { background: linear-gradient(180deg, #FFFFFF 16.739%, #FBF8F3 49.673%, #FFFFFF 82.606%); } /* Figma 778:7508 Voice/Landing frame fill */
 .vc-glow { position: absolute; pointer-events: none; z-index: 0; transform: rotate(180deg); opacity: 0; transition: opacity 600ms ease; }
 .vc-glow.on { opacity: 1; }
 .vc-glow img { display: block; width: 100%; height: 100%; }
@@ -893,6 +933,13 @@ p { margin: 0; }
 .vc-glow-bottom.listen { bottom: -332px; }
 .vc-glow-top { width: 1048px; height: 771px; left: calc(50% - 515px); top: -513px; }
 .vc-glow-top.speak { left: calc(50% - 547px); }
+/* Audio-reactive: --vc-top / --vc-bot (0..1) are written every frame by VoiceC. */
+.vc-glow-top.speak.on { transform: rotate(180deg) translateY(calc(var(--vc-top, 0) * -26px)) scale(calc(1 + var(--vc-top, 0) * 0.14)); opacity: calc(0.78 + var(--vc-top, 0) * 0.22); transition: none; }
+.vc-glow-bottom.listen.on { transform: rotate(180deg) translateY(calc(var(--vc-bot, 0) * 34px)) scale(calc(1 + var(--vc-bot, 0) * 0.16)); opacity: calc(0.75 + var(--vc-bot, 0) * 0.25); transition: none; }
+/* All voice background layers (glows, pause glows, paper) sit at the very bottom of the screen's own stack. */
+.scr.vc { isolation: isolate; }
+.scr.vc > .vc-glow, .scr.vc > .vc-pglow, .scr.vc > .paper-layer { z-index: -1; }
+.scr.vc > .vc-main { z-index: 1; } .scr.vc > .vc-ctrls { z-index: 2; }
 .vc-main { position: relative; z-index: 1; flex: 1; min-height: 0; max-height: 708px; padding: 0 24px; display: flex; flex-direction: column; gap: 24px; }
 .vc-head { display: flex; justify-content: space-between; align-items: flex-start; min-height: 42px; }
 .vc-actions { display: flex; gap: 12px; align-items: flex-start; }
@@ -900,16 +947,18 @@ p { margin: 0; }
 .vc .progress-wrap { position: relative; }
 .vc-tip { top: 48px; right: 0; }
 .vc-start { flex: 1; min-height: 0; max-height: 596px; padding: 24px 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 36px; }
-.vc-start-title { font: 300 24px/normal var(--c-font); color: #1a1a32; text-align: center; }
+.vc-start-title { font: 300 24px/normal var(--c-font); color: #0A0A24; text-align: center; }
 .vc-landing-orb { position: relative; width: 190px; height: 190px; flex-shrink: 0; overflow: hidden; }
 .vc-landing-orb .duo { --duo-a-size: 74%; --duo-b-size: 84%; --duo-r-px: 5px; }
 /* Whole conversation: scrolls, but nothing in it is tappable */
 .vc-transcript { flex: 1; min-height: 0; padding-bottom: 24px; margin-right: -14px; padding-right: 14px; display: flex; flex-direction: column; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(60, 63, 88, 0.25) transparent; user-select: none; -webkit-user-select: none; }
+/* Soft fade where the transcript scrolls under the top bar and orb block (no hard cutoff). */
+.vc-transcript { -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 32px, #000 calc(100% - 48px), transparent 100%); mask-image: linear-gradient(to bottom, transparent 0, #000 32px, #000 calc(100% - 48px), transparent 100%); padding-top: 16px; }
 .vc-transcript::-webkit-scrollbar { width: 6px; }
 .vc-transcript::-webkit-scrollbar-thumb { background: rgba(60, 63, 88, 0.25); border-radius: 100px; }
 /* User lines stay in blue bubbles (overrides Figma 708:7706, which shows plain text). Flag for design review. */
 .vc-bubble { width: fit-content; max-width: 307px; margin: 8px 0 8px auto; padding: 12px 16px; border-radius: 20px 20px 4px 20px; background: var(--bubble); color: var(--navy); font: 400 16px/24px var(--c-font); text-align: left; white-space: pre-wrap; overflow-wrap: anywhere; }
-.vc-line { padding: 10px 0; font: 400 16px/24px var(--c-font); color: #1a1a32; white-space: pre-wrap; overflow-wrap: anywhere; }
+.vc-line { padding: 10px 0; font: 400 16px/24px var(--c-font); color: #0A0A24; white-space: pre-wrap; overflow-wrap: anywhere; }
 .vc-wysa { width: 354px; max-width: 100%; }
 .vc-wysa .later { color: #b1b4ce; }
 .vc-user { text-align: right; margin-top: 4px; }
@@ -919,13 +968,17 @@ p { margin: 0; }
 .vc-orb .duo { --duo-a-size: 78%; --duo-b-size: 88%; --duo-r-px: 3px; }
 .vc-orb.hidden { visibility: hidden; }
 .vc-orb.pulse { animation: orb-pulse 1.6s ease-in-out infinite alternate; }
-.vc-label { min-height: 28px; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 0 24px; font: 300 20px/1.4 var(--c-font); color: rgba(38, 48, 59, 0.75); text-align: center; }
+.vc-label { min-height: 28px; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 0 24px; font: 300 16px/1.4 var(--c-font); color: rgba(38, 48, 59, 0.75); text-align: center; }
 .vc-label.err { color: var(--error); }
 .vc-label .spin { width: 24px; height: 24px; animation: spin 0.9s linear infinite; }
+.vc-err-block { justify-content: flex-end; padding: 0 0 4px; }
+.vc-err { width: 316px; padding: 0; border: 0; background: none; cursor: pointer; font: 300 14px/1.4 var(--c-font); color: #d26969; text-align: center; word-break: break-word; }
 .vc-ctrls { position: relative; z-index: 2; height: 138px; flex-shrink: 0; padding: 32px 24px 0; display: flex; justify-content: space-between; align-items: flex-start; animation: cc-bottom-in 220ms ease-out both; }
+/* Voice mode: top bar, orb block and bottom bar sit transparently over the screen gradient/glows/paper. */
+.scr.vc .vc-main, .scr.vc .vc-head, .scr.vc .vc-orb-block, .scr.vc .vc-ctrls { background: transparent; box-shadow: none; backdrop-filter: none; }
 .vc-pill {
   display: flex; align-items: center; justify-content: center; gap: 10px; padding: 12px; border-radius: 100px; background: #fff;
-  filter: drop-shadow(0 0 3.5px #a3ece7); font: 300 16px/normal var(--c-font); color: #1a1a32; white-space: nowrap;
+  filter: drop-shadow(0 0 3.5px #a3ece7); font: 400 16px/normal var(--c-font); color: #0A0A24; white-space: nowrap;
 }
 .vc-pill.grey { filter: drop-shadow(0 0 3.5px #cacaca); }
 .vc-pill.active { font-weight: 590; color: #de761e; }
@@ -934,7 +987,7 @@ p { margin: 0; }
 .ch-C { background: linear-gradient(100deg, #e4f8f6 0%, #fff6ea 46%, #fbd9b3 100%); }
 
 /* Voice C → Chat C transitions (no Figma frame for the choreography; flag for design review).
-   Type: caption shows a loader, then an in-place morph (no swoosh). X: cyan/peach swoosh (drawn by App.tsx). */
+   Type: caption shows a loader, then an in-place morph (no swoosh). X: cyan/yellow swoosh (drawn by App.tsx). */
 @keyframes orb-spin-out { to { opacity: 0; transform: scale(0) rotate(200deg); } }
 @keyframes thread-expand { from { opacity: 0; transform: translateY(-16px) scaleY(0.95); transform-origin: top; } }
 @keyframes glow-in-left { from { opacity: 0; transform: translateX(-55%); } }
@@ -993,6 +1046,24 @@ p { margin: 0; }
 .tr-C.tr-enter.tr-home-voice .vc-ctrls { animation: bar-in-bottom 450ms var(--ease-out) both; }
 .tr-C.tr-enter.tr-home-voice .vc-label { animation: blur-in 700ms ease-out 450ms both; }
 .tr-C.tr-enter.tr-home-voice .vc-orb { animation: orb-settle 750ms var(--overshoot) 300ms both; }
+
+/* Variant C: chat/voice → Home (A's chat-home choreography on C's classes; no Figma frame, flag for design review).
+   Exit: input drops, messages/voice content fade, glows fade, top bar leaves. Enter: the full screen settles into
+   B's Home hero (no screen fade, so no flash), Home's content fades in, feed and nav rise. */
+@keyframes c-hero-settle { from { height: 100%; border-radius: 0; } }
+.tr-C.tr-exit.tr-chat-home .cc-comp, .tr-C.tr-exit.tr-voice-home .vc-ctrls { animation: a-sink 300ms var(--ease-in) forwards; }
+.tr-C.tr-exit.tr-chat-home .cc-thread, .tr-C.tr-exit.tr-voice-home .vc-transcript,
+.tr-C.tr-exit.tr-voice-home .vc-label { animation: fade-out 250ms ease 200ms forwards; }
+.tr-C.tr-exit.tr-voice-home .vc-orb, .tr-C.tr-exit.tr-voice-home .vc-landing-orb { animation: orb-out 300ms var(--ease-in) forwards; }
+.tr-C.tr-exit.tr-chat-home .cc-glow-small, .tr-C.tr-exit.tr-chat-home .cc-glow-big,
+.tr-C.tr-exit.tr-voice-home .vc-glow, .tr-C.tr-exit.tr-voice-home .vc-pglow { animation: fade-out 300ms ease 300ms forwards; }
+.tr-C.tr-exit.tr-chat-home .cc-head { animation: bar-out-top 250ms var(--ease-in) 380ms forwards; }
+.tr-C.tr-exit.tr-voice-home .vc-head { animation: bar-out-top 250ms var(--ease-in) 380ms forwards; }
+.tr-C.tr-enter.tr-chat-home .hb-hero, .tr-C.tr-enter.tr-voice-home .hb-hero { animation: c-hero-settle 600ms var(--ease-out) both; }
+.tr-C.tr-enter.tr-chat-home .hb-top, .tr-C.tr-enter.tr-voice-home .hb-top,
+.tr-C.tr-enter.tr-chat-home .hb-body, .tr-C.tr-enter.tr-voice-home .hb-body { animation: fade-in 400ms ease 450ms both; }
+.tr-C.tr-enter.tr-voice-home .hb-today { animation: slide-up-in 600ms var(--ease-out) 120ms both; }
+.tr-C.tr-enter.tr-voice-home .bottom-nav { animation: slide-up-in 500ms var(--ease-out) 200ms both; }
 
 /* Variant C: error message text sizing */
 .chat-c .failed {

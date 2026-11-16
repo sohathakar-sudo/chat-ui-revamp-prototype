@@ -22,15 +22,18 @@ export function Recorder({ onDone, onDenied, accent = 'teal', skin }: Props) {
   /** After the tick: transcribing (no Figma frame: spinner in place of the waveform, flagged for design review). */
   const [busy, setBusy] = useState(false);
   /** Buttons act on the live session only; a stale (StrictMode throwaway) mount can never touch it. */
-  const api = useRef<{ finish(cancel: boolean): void } | null>(null);
+  const api = useRef<{ finish(cancel: boolean): void; togglePause(): void } | null>(null);
+  /** Paused: timer, waveform and capture are held until resumed (Figma 778:7906 Pause pill). */
+  const [paused, setPaused] = useState(false);
 
   useEffect(() => {
     type Session = {
       alive: boolean; finished: boolean; cancelled: boolean;
       mic?: Mic; rec?: Recognizer; media?: MediaRecorder;
       chunks: Blob[]; start: number; live: string; raf: number; pulse: number;
+      paused: boolean; pauseAt: number; pausedMs: number; segs: string[];
     };
-    const S: Session = { alive: true, finished: false, cancelled: false, chunks: [], start: performance.now(), live: '', raf: 0, pulse: 0 };
+    const S: Session = { alive: true, finished: false, cancelled: false, chunks: [], start: performance.now(), live: '', raf: 0, pulse: 0, paused: false, pauseAt: 0, pausedMs: 0, segs: [] };
     const serverMode = store.get().status.stt === 'server';
     let startTimer = 0;
 
@@ -64,14 +67,15 @@ export function Recorder({ onDone, onDenied, accent = 'teal', skin }: Props) {
           }
           S.mic?.close();
           if (S.chunks.length) text = await transcribeOnServer(new Blob(S.chunks, { type: S.media.mimeType }));
-        } else if (S.rec) {
+        } else if (S.rec || S.segs.length) {
           S.mic?.close();
-          text = await S.rec.stop();
+          const cur = S.rec ? await S.rec.stop() : '';
+          text = [...S.segs, cur].filter(Boolean).join(' ');
         }
       } catch {
         text = '';
       }
-      if (!text.trim()) text = S.live;
+      if (!text.trim()) text = [...S.segs, S.live].filter(Boolean).join(' ');
       cleanup();
       const wait = 400 - (performance.now() - shownAt);
       if (wait > 0) await new Promise((r) => setTimeout(r, wait));
@@ -81,7 +85,8 @@ export function Recorder({ onDone, onDenied, accent = 'teal', skin }: Props) {
     const loop = () => {
       const tick = (t: number) => {
         if (!S.alive || S.finished) return;
-        const ms = performance.now() - S.start;
+        if (S.paused) { S.raf = requestAnimationFrame(tick); return; }
+        const ms = performance.now() - S.start - S.pausedMs;
         setElapsed(ms);
         if (ms >= config.voiceNote.maxMs) { finish(false); return; }
         if (t - last > 80) {
@@ -101,7 +106,42 @@ export function Recorder({ onDone, onDenied, accent = 'teal', skin }: Props) {
       S.raf = requestAnimationFrame(tick);
     };
 
-    api.current = { finish };
+    const startRec = () => {
+      const rec = createRecognizer({
+        onUpdate: (text) => { S.live = text; S.pulse = 0.5; },
+        onError: (code) => {
+          if (code === 'denied') { S.finished = true; cleanup(); onDenied(); }
+          // other errors keep recording; finish() handles an empty result
+        },
+      });
+      S.rec = rec;
+      try { rec.start(); } catch { S.finished = true; cleanup(); onDone(null); }
+    };
+
+    const togglePause = async () => {
+      if (S.finished) return;
+      if (!S.paused) {
+        S.paused = true; S.pauseAt = performance.now();
+        setPaused(true);
+        if (S.media && S.media.state === 'recording') { try { S.media.pause(); } catch { /* noop */ } }
+        if (S.rec) {
+          const r = S.rec; S.rec = undefined;
+          let t = '';
+          try { t = await r.stop(); } catch { /* noop */ }
+          if (!t.trim()) t = S.live;
+          if (t.trim()) S.segs.push(t.trim());
+          S.live = '';
+        }
+      } else {
+        S.pausedMs += performance.now() - S.pauseAt;
+        S.paused = false;
+        setPaused(false);
+        if (S.media && S.media.state === 'paused') { try { S.media.resume(); } catch { /* noop */ } }
+        else if (!serverMode && !S.finished) startRec();
+      }
+    };
+
+    api.current = { finish, togglePause };
 
     // Defer one tick so StrictMode's throwaway mount never starts the mic or recognition.
     startTimer = window.setTimeout(async () => {
@@ -125,15 +165,7 @@ export function Recorder({ onDone, onDenied, accent = 'teal', skin }: Props) {
         } catch { S.finished = true; cleanup(); onDone(null); }
         return;
       }
-      const rec = createRecognizer({
-        onUpdate: (text) => { S.live = text; S.pulse = 0.5; },
-        onError: (code) => {
-          if (code === 'denied') { S.finished = true; cleanup(); onDenied(); }
-          // other errors keep recording; finish() handles an empty result
-        },
-      });
-      S.rec = rec;
-      try { rec.start(); } catch { S.finished = true; cleanup(); onDone(null); }
+      startRec();
     }, 0);
 
     return () => {
@@ -149,11 +181,48 @@ export function Recorder({ onDone, onDenied, accent = 'teal', skin }: Props) {
   const s = Math.floor(elapsed / 1000);
   const time = `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
 
+  if (skin === 'c') {
+    // Figma 778:7906: 28px card (388 × 110): time + waveform row, then bin / Pause pill / 42px tick row.
+    return (
+      <div className="recorder rec-c">
+        <div className="rec-card">
+          <div className="rec-top">
+            <span className="rec-time">{time}</span>
+            {busy ? (
+              <span className="rec-busy" role="status" aria-label="Transcribing">
+                <img className="spin" src="/assets/spinner.svg" width={24} height={24} alt="" />
+              </span>
+            ) : (
+              <svg className="rec-wave" viewBox="0 0 200 24" aria-hidden>
+                {levels.map((lv, i) => {
+                  const h = paused ? 4 : Math.max(4, Math.min(20, 4 + lv * 20));
+                  const x = 5 + i * 8;
+                  return <line key={i} x1={x} x2={x} y1={12 - h / 2} y2={12 + h / 2} stroke={color} strokeWidth={2} strokeLinecap="round" />;
+                })}
+              </svg>
+            )}
+          </div>
+          <div className="rec-actions">
+            <button className="rec-bin" onClick={() => api.current?.finish(true)} aria-label="Discard recording">
+              <img src="/assets/c/fig-trash.svg" width={20} height={20} alt="" />
+            </button>
+            <button className="rec-pause" onClick={() => api.current?.togglePause()} disabled={busy} aria-pressed={paused} aria-label={paused ? 'Resume recording' : 'Pause recording'}>
+              <img src="/assets/c/fig-pause-circle.svg" width={20} height={20} alt="" />{paused ? 'Resume' : 'Pause'}
+            </button>
+            <button className="rec-ok" onClick={() => api.current?.finish(false)} disabled={busy} aria-label="Stop and transcribe">
+              <img src="/assets/c/fig-check.svg" width={24} height={24} alt="" />
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={`recorder${skin ? ` rec-${skin}` : ''}`}>
       <div className="rec-pill">
         <button className="icon24" onClick={() => api.current?.finish(true)} aria-label="Discard recording">
-          <img src={skin === 'c' ? '/assets/c/trash.svg' : '/assets/trash.svg'} width={24} height={24} alt="" />
+          <img src={skin === 'c' ? '/assets/c/fig-trash.svg' : '/assets/trash.svg'} width={skin === 'c' ? 20 : 24} height={skin === 'c' ? 20 : 24} alt="" />
         </button>
         <div className="rec-mid">
           <span className="rec-time">{time}</span>
@@ -172,7 +241,7 @@ export function Recorder({ onDone, onDenied, accent = 'teal', skin }: Props) {
           )}
         </div>
         <button className="rec-ok" style={{ background: color }} onClick={() => api.current?.finish(false)} disabled={busy} aria-label="Stop and transcribe">
-          <img src={skin === 'c' ? '/assets/c/check.svg' : '/assets/check.svg'} width={18} height={20} alt="" />
+          <img src={skin === 'c' ? '/assets/c/fig-check.svg' : '/assets/check.svg'} width={skin === 'c' ? 24 : 18} height={skin === 'c' ? 24 : 20} alt="" />
         </button>
       </div>
     </div>

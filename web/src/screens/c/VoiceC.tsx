@@ -5,12 +5,21 @@ import { useEffect, useRef, useState } from 'react';
 import { config } from '../../../../shared/config';
 import { useStore } from '../../lib/store';
 import { splitWords } from '../../lib/speech';
-import type { VoiceModel } from '../../lib/useVoice';
+import type { VoiceError, VoiceModel } from '../../lib/useVoice';
 import { DuoOrb } from '../../components/DuoOrb';
 import { StatusBar } from '../../components/StatusBar';
+import { PaperLayer } from '../../components/PaperLayer';
+
+// Figma 778:7697 shows a dummy "Error state" string; this copy is a stand-in, flagged for design review.
+const ERROR_COPY: Record<VoiceError, string> = {
+  mic: "I can't hear you. Allow mic access, then tap here to try again.",
+  silence: "I didn't catch that. Tap here to try again.",
+  network: 'Connection lost. Tap here to try again.',
+  reply: "I couldn't respond just now. Tap here to try again.",
+};
 
 export function VoiceC({ v }: { v: VoiceModel }) {
-  const { phase, idleReason, resuming, caption, transcript, replyText, spokenWords, onScreenTap, toggleMute, leave } = v;
+  const { phase, idleReason, resuming, caption, transcript, replyText, spokenWords, onScreenTap, toggleMute, leave, voiceError, retryError } = v;
   const messages = useStore((s) => s.messages);
   const trans = useStore((s) => s.trans);
   const leaving = trans?.kind === 'voice-chat' && trans.stage !== 'enter';
@@ -21,6 +30,36 @@ export function VoiceC({ v }: { v: VoiceModel }) {
 
   const [mounted, setMounted] = useState(false);
   useEffect(() => { const r = requestAnimationFrame(() => setMounted(true)); return () => cancelAnimationFrame(r); }, []);
+
+  // Audio-reactive glows: Wysa's top glow breathes with a simulated speech envelope (TTS has no
+  // readable stream), the bottom glow follows the live mic level. Smoothed (lerp) and written as CSS vars.
+  const rootRef = useRef<HTMLDivElement>(null);
+  const micLevel = v.micLevel;
+  const phaseNow = useRef(phase);
+  phaseNow.current = phase;
+  useEffect(() => {
+    let raf = 0, top = 0, bot = 0, tgt = 0, nextT = 0;
+    const loop = (t: number) => {
+      const ph = phaseNow.current;
+      let topT = 0, botT = 0;
+      if (ph === 'speaking') {
+        if (t > nextT) { tgt = 0.25 + Math.random() * 0.75; nextT = t + 90 + Math.random() * 140; }
+        topT = Math.min(1, tgt * (0.75 + 0.25 * Math.sin(t / 130)));
+      } else if (ph === 'listening') {
+        botT = Math.min(1, micLevel() * 1.8);
+      }
+      top += (topT - top) * 0.15;
+      bot += (botT - bot) * 0.15;
+      const el = rootRef.current;
+      if (el) {
+        el.style.setProperty('--vc-top', top.toFixed(3));
+        el.style.setProperty('--vc-bot', bot.toFixed(3));
+      }
+      raf = requestAnimationFrame(loop);
+    };
+    raf = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(raf);
+  }, [micLevel]);
 
   // Hamburger: "Work in progress" tooltip, dismissed after a few seconds or on the next tap.
   const [tip, setTip] = useState(false);
@@ -55,9 +94,10 @@ export function VoiceC({ v }: { v: VoiceModel }) {
   const showMenu = true;
 
   return (
-    <div className={`scr vc${ready ? ' vc-ready' : ''}${paused ? ' is-paused' : ''}`} onClick={onScreenTap}
-      style={{ cursor: phase === 'idle' || phase === 'failed' ? 'pointer' : undefined }}>
+    <div ref={rootRef} className={`scr vc${ready ? ' vc-ready' : ''}${paused ? ' is-paused' : ''}`} onClick={voiceError ? undefined : onScreenTap}
+      style={{ cursor: phase === 'idle' && !voiceError ? 'pointer' : undefined }}>
       <div className={`vc-glow vc-glow-bottom${mounted && ready ? ' on' : ''}`}><img src="/assets/c/v-glow-bottom-landing.svg" alt="" /></div>
+      <PaperLayer />
       <div className={`vc-glow vc-glow-top${mounted && ready ? ' on' : ''}`}><img src="/assets/c/v-glow-top-landing.svg" alt="" /></div>
       <div className={`vc-glow vc-glow-top speak${mounted && speaking ? ' on' : ''}`}><img src="/assets/c/v-glow-top-speak.svg" alt="" /></div>
       <div className={`vc-glow vc-glow-bottom listen${mounted && !ready && !grey ? ' on' : ''}`}><img src="/assets/c/v-glow-bottom-listen.svg" alt="" /></div>
@@ -105,18 +145,22 @@ export function VoiceC({ v }: { v: VoiceModel }) {
               )}
               {liveUser && <p className="vc-bubble">{liveUser}</p>}
             </div>
+            {voiceError ? (
+              <div className="vc-orb-block vc-err-block">
+                <button className="vc-err" onClick={(e) => { e.stopPropagation(); retryError(); }} aria-label={ERROR_COPY[voiceError]}>
+                  {ERROR_COPY[voiceError]}
+                </button>
+              </div>
+            ) : (
             <div className="vc-orb-block">
               <div className={`vc-orb${paused ? ' hidden' : ''}${phase === 'thinking' ? ' pulse' : ''}`}>
                 <DuoOrb tone={ready ? 'cycle' : (speaking || phase === 'thinking') ? 'speak' : 'listen'} />
               </div>
               <p className={`vc-label${caption?.err ? ' err' : ''}`} role="status" aria-live="polite">
-                {leaving && trans?.source === 'type' ? (
-                  <><img className="spin" src="/assets/spinner.svg" alt="" />Taking you to chat</>
-                ) : (
-                  <>{caption?.spin && <img className="spin" src="/assets/spinner.svg" alt="" />}{label}</>
-                )}
+                <>{caption?.spin && <img className="spin" src="/assets/spinner.svg" alt="" />}{label}</>
               </p>
             </div>
+            )}
         </>
       </div>
 

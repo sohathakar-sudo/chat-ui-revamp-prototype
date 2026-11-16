@@ -19,7 +19,9 @@ export function Loader() {
   // Hand off to Chat directly; App keeps a fading copy of the loader on top (see LoaderOverlay) so
   // there is never a blank frame between the two screens.
   useEffect(() => {
-    const a = setTimeout(() => store.go('chat'), 2400);
+    // Variant C: minimum of 2 full yellow -> blue -> yellow cycles (3s each) before the chat appears.
+    const ms = store.get().variant === 'C' ? 6000 : 2400;
+    const a = setTimeout(() => store.go('chat'), ms);
     return () => clearTimeout(a);
   }, []);
   return (

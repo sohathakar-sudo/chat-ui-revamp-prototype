@@ -15,6 +15,7 @@ export function useChat() {
   const replying = messages.some((m) => m.role === 'assistant' && (m.status === 'pending' || m.status === 'streaming'));
 
   const [text, setText] = useState('');
+  const [multiline, setMultiline] = useState(false);
   const [recording, setRecording] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [headerTip, setHeaderTip] = useState(false);
@@ -27,8 +28,15 @@ export function useChat() {
   useLayoutEffect(() => {
     const el = inputRef.current;
     if (!el) return;
+    // Measure the natural height, then animate (CSS transition on height) from the current one.
+    const prev = el.offsetHeight;
     el.style.height = 'auto';
-    el.style.height = `${el.scrollHeight}px`;
+    const next = el.scrollHeight;
+    el.style.height = `${prev}px`;
+    void el.offsetHeight;
+    el.style.height = `${next}px`;
+    // Typing text of one line = 22px padding + one 24px line; anything taller is multi-line.
+    setMultiline(hasText && next >= 64);
   }, [text, recording, hasText]);
 
   // Keep the newest message in view.
@@ -73,7 +81,7 @@ export function useChat() {
   };
 
   return {
-    messages, online, playingId, replying, hasText, threadRef, inputRef,
+    messages, online, playingId, replying, hasText, multiline, threadRef, inputRef,
     text, recording, notice, headerTip, voiceTip,
     onText(value: string) { setText(value); if (notice) setNotice(null); },
     onKeyDown(e: KeyboardEvent<HTMLTextAreaElement>) {
