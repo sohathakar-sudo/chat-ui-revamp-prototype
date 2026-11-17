@@ -222,7 +222,8 @@ export function VoiceC({ v }: { v: VoiceModel }) {
               <div className={`vc-orb${paused ? ' hidden' : ''}${thinking ? ' pulse' : ''}`}>
                 <div className="vc-orb-in">{thinking
                   ? <img className="vc-orb-think" src="/assets/c/v-orb-think.svg" alt="" />
-                  : <DuoOrb tone={ready ? 'cycle' : speaking ? 'speak' : 'listen'} />}</div>
+                  : ready ? <DuoOrb tone="cycle" />
+                  : <img className="vc-orb-fig" src={speaking ? '/assets/c/v-orb-speak.svg' : '/assets/c/v-orb-listen.svg'} alt="" />}{/* Figma 778:7557 / 778:7598 orb art (audit D9) */}</div>
               </div>
               <p className={`vc-label${cap?.err ? ' err' : ''}`} role="status" aria-live="polite">
                 <>{cap?.spin && <img className="spin" src="/assets/spinner.svg" alt="" />}{label}</>

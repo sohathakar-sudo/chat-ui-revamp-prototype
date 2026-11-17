@@ -1,0 +1,59 @@
+/* Variant C Home content below Morning Check-in (Figma 815:687, "Nov 17 – Claude pass"). Scoped to C only. */
+
+/* Home scrolls under the fixed bottom nav (nav is 66 + 24 padding + 1 border = 91px). */
+.hc-scroll {
+  flex: 1; min-height: 0; overflow-x: hidden; overflow-y: auto; display: flex; flex-direction: column; gap: 24px;
+  padding-bottom: 91px; scrollbar-width: none; overscroll-behavior: contain;
+}
+.hc-scroll::-webkit-scrollbar { display: none; }
+.hc-scroll > .hb-hero, .hc-scroll > .hb-today { flex: none; }
+
+.hb-today.c .list { display: flex; flex-direction: column; gap: 24px; }
+.hb-today.c .tag { line-height: 13px; }
+.hc-ms { width: 32px; height: 32px; flex-shrink: 0; display: block; }
+
+/* Plain (art-backed) task cards: Taking Control, Sleep Story */
+.mc-card.hc-plain { background-image: none; filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.25)); }
+.mc-card.hc-plain .content { z-index: 4; }
+.mc-card.hc-plain .overlay { z-index: 3; }
+.hc-tc .overlay { top: calc(50% + 28.7px); }
+.hc-ss .overlay { top: calc(50% - 7px); }
+.hc-ss .content h3, .hc-ss .desc, .hc-ss .cta { font-family: "Roboto", var(--sf); }
+.hc-ss .content h3 { width: 124px; font-weight: 600; }
+.hc-ss .desc { width: 155px; }
+.hc-ss .cta.white { background: #fff; color: #cb7900; border-radius: 25px; font-weight: 600; filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.25)); }
+
+.hc-art { position: absolute; overflow: clip; z-index: 1; }
+.hc-art-tc { bottom: -0.94px; left: 0; right: 0; aspect-ratio: 324 / 104.14286; }
+.hc-art-st { left: 0; right: 0.14%; top: 50%; transform: translateY(-50%); aspect-ratio: 700 / 450; }
+.hc-art-sk { top: 0; bottom: 0; left: calc(50% - 0.25px); transform: translateX(-50%); aspect-ratio: 1; }
+
+/* Section headings */
+.hc-sleep { width: 372px; max-width: 100%; padding: 24px 0; display: flex; flex-direction: column; gap: 24px; }
+.hc-skills { width: 100%; padding: 24px 0; display: flex; flex-direction: column; gap: 24px; }
+.hc-sec-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.hc-sec-head h2 { margin: 0; font-weight: 590; font-size: 26px; line-height: normal; color: #575b7f; white-space: nowrap; }
+.hc-sleep .hc-sec-head h2 { width: 267px; }
+.hc-viewall { width: 96px; text-align: right; font-weight: 590; font-size: 18px; line-height: normal; color: #cb7900; }
+.hc-progress { width: 118px; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+.hc-progress span { width: 100%; text-align: right; font-weight: 510; font-size: 18px; line-height: normal; color: #0a0a24; }
+.hc-progress img { display: block; }
+
+/* Skill tiles */
+.hc-grid { width: 371px; max-width: 100%; display: flex; flex-wrap: wrap; align-items: flex-start; gap: 16px; }
+.hc-tile { position: relative; flex: none; overflow: clip; border-radius: 24px; isolation: isolate; }
+.hc-tile:not(.locked) { width: 177.5px; height: 177px; padding: 20px; display: flex; flex-direction: column; gap: 16px; filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.25)); }
+.hc-tile-content { position: relative; z-index: 3; display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
+.hc-tile .tag { background: rgba(255, 255, 255, 0.8); color: #1a1a32; align-self: flex-start; }
+.hc-tile-text { display: flex; flex-direction: column; gap: 8px; }
+.hc-tile-text h3 { margin: 0; width: 137px; font-weight: 590; font-size: 20px; line-height: normal; color: #0a0a24; }
+.hc-tile-text p { margin: 0; font-weight: 400; font-size: 18px; line-height: normal; color: #696a6a; white-space: nowrap; }
+.hc-tile.locked { width: 177px; height: 177px; padding: 20px; background: #fbfbfb; box-shadow: 0 0 4px rgba(0, 0, 0, 0.25); display: flex; align-items: center; justify-content: center; }
+.hc-lock-content { position: relative; z-index: 1; width: 141px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; }
+.hc-lock-badge { width: 29px; height: 29px; padding: 5px; border-radius: 14.5px; background: #e8ebef; filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.1)); display: flex; align-items: center; justify-content: center; }
+.hc-lock-content p { margin: 0; width: 141px; text-align: center; font-weight: 400; font-size: 18px; line-height: normal; color: #0a0a24; }
+.hc-lk-bg { position: absolute; left: calc(50% + 2.76px); transform: translateX(-50%); top: 19.13%; bottom: -2.93%; aspect-ratio: 337.017 / 148.328; opacity: 0.6; overflow: clip; z-index: 0; }
+
+/* View all skills */
+.hc-navitem { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-radius: 16px; background: #fff; filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.25)); }
+.hc-navitem .left { display: flex; align-items: center; gap: 12px; font-weight: 510; font-size: 18px; line-height: normal; color: #1a1a32; white-space: nowrap; }

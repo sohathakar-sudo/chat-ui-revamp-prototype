@@ -820,7 +820,7 @@ p { margin: 0; }
    The two screens share background, glows and the 138px bottom region; only that region fades in.
    ===================================================================================== */
 .scr.chat-c, .scr.vc {
-  --c-font: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'SF Pro', system-ui, sans-serif;
+  --c-font: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'SF Pro', 'Inter', system-ui, sans-serif; /* Inter = close backup for non-Apple devices (audit D1) */
   font-family: var(--c-font);
   background: #FBF8F3;
   color: #0A0A24;
@@ -1221,3 +1221,8 @@ html[data-paper="on"] .paper-layer { display: block; }
 .vc-explain { justify-content: center; padding: 0 24px; }
 .cc-explainer p, .vc-explain p { margin: 0; max-width: 316px; font: 400 18px/24px var(--c-font); color: #575B7F; }
 .cc-explainer button, .vc-explain button { padding: 12px 24px; border-radius: 100px; background: #DE761E; color: #fff; font: 400 18px/24px var(--c-font); box-shadow: var(--sh-btn-primary); cursor: pointer; }
+
+/* Audit D4: paragraphs in Wysa replies sit 24px apart (Figma Chat/Typing). */
+.cc-wysa .text .cc-para + .cc-para { margin-top: 24px; }
+/* Audit D9: Speaking/Listening orbs use Figma's own orb art (soft glossy spheres), gently breathing. */
+.vc-orb-fig { position: absolute; inset: 0; width: 100%; height: 100%; animation: duo-breathe 4s ease-in-out infinite alternate; }

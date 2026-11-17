@@ -5,7 +5,7 @@ export type VoiceName = 'Cindy' | 'Daniel' | 'Lucy' | 'Harrison';
 
 export const config = {
   /** First Wysa message shown when the Chat thread opens. */
-  greeting: "Hi Peter! What's on your mind today?",
+  greeting: "Hey Peter, how’s it going?", // Figma Chat/Active 778:7887 (audit D3)
   userName: 'Peter',
 
   /** Wysa persona, sent as the system prompt with every LLM request. */

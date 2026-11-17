@@ -21,6 +21,7 @@ export function FadeScrollbar({ scroller }: { scroller: RefObject<HTMLElement | 
       raf = 0;
       const { scrollHeight: sh, clientHeight: ch, scrollTop: st } = el;
       if (sh <= ch + 1) { t.style.opacity = '0'; return; }
+      t.style.opacity = '1'; // always visible while there is more to scroll (Figma Voice/Scroll, audit D6)
       const h = Math.max(24, (ch / sh) * ch);
       const y = (st / (sh - ch)) * (ch - h);
       t.style.height = `${h}px`;
@@ -31,7 +32,6 @@ export function FadeScrollbar({ scroller }: { scroller: RefObject<HTMLElement | 
       if (!raf) raf = requestAnimationFrame(update);
       t.style.opacity = '1';
       clearTimeout(hide);
-      hide = window.setTimeout(() => { t.style.opacity = '0'; }, 1000);
     };
     el.addEventListener('scroll', onScroll, { passive: true });
     update();
@@ -296,7 +296,7 @@ function MessageRowC({ m, c, showRead, typing, typed }: { m: Message; c: ChatMod
   }
   return (
     <div className="msg wysa cc-wysa">
-      <p className="text">{typed ?? m.text}{typed !== undefined && <span className="type-caret" />}</p>
+      <div className="text">{paras(typed ?? m.text)}{typed !== undefined && <span className="type-caret" />}</div>
       {showRead && m.status === 'done' && typed === undefined && (
         <button className={`cc-read${playing ? ' playing' : ''}`} onClick={() => c.togglePlayback(m.id)} aria-pressed={playing} aria-label={playing ? 'Stop reading aloud' : 'Read aloud'}>
           {playing
@@ -319,4 +319,10 @@ function TypingC({ forceSlow }: { forceSlow?: boolean }) {
       {(slow || forceSlow) && <p className="cc-slow" role="status">Taking longer than usual…</p>}
     </div>
   );
+}
+
+// Multi-paragraph replies: 24px gap between paragraphs (Figma Chat/Typing frames, audit D4).
+function paras(text: string) {
+  const parts = text.split(/\n\s*\n|\n/);
+  return parts.length < 2 ? text : parts.map((p, i) => <p key={i} className="cc-para">{p}</p>);
 }
