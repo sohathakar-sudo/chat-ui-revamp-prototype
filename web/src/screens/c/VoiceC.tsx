@@ -14,20 +14,38 @@ import { PaperLayer, useErrorPreview } from '../../components/PaperLayer';
 // Figma 778:7697 shows a dummy "Error state" string; this copy is a stand-in, flagged for design review.
 const ERROR_COPY: Record<VoiceError, string> = {
   mic: "I can't hear you. Allow mic access, then tap here to try again.",
-  silence: "I didn't catch that. Tap here to try again.",
+  silence: "Couldn't catch that. Tap here to try again.",
   network: 'Connection lost. Tap here to try again.',
   reply: "I couldn't respond just now. Tap here to try again.",
+  blocked: 'Mic access is off. Open Settings to turn it on.',
+  nomic: 'No microphone found. You can still type.',
 };
 
 export function VoiceC({ v }: { v: VoiceModel }) {
   const { phase, idleReason, resuming, caption, transcript, replyText, spokenWords, onScreenTap, toggleMute, leave, retryError } = v;
   const errPreview = useErrorPreview();
-  const voiceError: VoiceError | null | undefined = v.voiceError ?? (errPreview ? 'network' : null);
+  // Error preview (desktop toggle) maps onto Figma's Voice/Error/* and Voice/Reconnecting frames.
+  const previewError: VoiceError | null = errPreview === 'reply' || errPreview === 'mic' || errPreview === 'silence' || errPreview === 'network' || errPreview === 'blocked' || errPreview === 'nomic' ? errPreview : null;
+  const previewReconnect = errPreview === 'reconnecting' || errPreview === 'offline';
+  const voiceError: VoiceError | null | undefined = v.voiceError ?? previewError;
   const messages = useStore((s) => s.messages);
   const trans = useStore((s) => s.trans);
   const leaving = trans?.kind === 'voice-chat' && trans.stage !== 'enter';
-  const ready = phase === 'idle' && idleReason === 'initial' && !leaving && !resuming;
-  const paused = phase === 'paused';
+  const pvSlow = errPreview === 'slow', pvHeld = errPreview === 'held', pvExplainer = errPreview === 'explainer';
+  const pvVoice = pvSlow || pvHeld || pvExplainer;
+  const thinking = phase === 'thinking' || pvSlow;
+  const ready = phase === 'idle' && idleReason === 'initial' && !leaving && !resuming && !pvVoice;
+  const paused = phase === 'paused' || pvHeld;
+  const showHeld = paused && (v.held || pvHeld);
+  const showExplainer = v.explainer || pvExplainer;
+  // Voice/SlowReply: Thinking for more than 8s.
+  const [slowThink, setSlowThink] = useState(false);
+  useEffect(() => {
+    setSlowThink(false);
+    if (phase !== 'thinking') return;
+    const t = setTimeout(() => setSlowThink(true), 8000);
+    return () => clearTimeout(t);
+  }, [phase]);
   const speaking = phase === 'speaking';
   const grey = speaking || paused;
 
@@ -125,21 +143,23 @@ export function VoiceC({ v }: { v: VoiceModel }) {
   });
 
 
-  const label = ready ? 'Tap to start' : caption?.text ?? '';
-  // The Iteration-3 frames show the header icons inconsistently (Paused has neither, Speaking only
-  // the gear). Per design review we keep X + gear + hamburger in every state so the functional gear
-  // (voice settings) and hamburger stay reachable throughout. Flagged as a deviation from the frames.
+  const cap = previewReconnect && !v.voiceError ? { text: 'Reconnecting', err: true, spin: true }
+    : pvHeld && !v.voiceError ? { text: 'Paused', err: false, spin: false }
+    : thinking && (slowThink || pvSlow) && !v.voiceError ? { text: 'Still thinking…', err: false, spin: false }
+    : caption;
+  const label = cap !== caption ? cap!.text : ready ? 'Tap to start' : caption?.text ?? '';
+  // Header: X + settings + menu in every state, as in the Figma frames (Paused included).
   const showGear = true;
   const showMenu = true;
 
   return (
-    <div ref={rootRef} className={`scr vc${ready ? ' vc-ready' : ''}${phase === 'thinking' ? ' is-thinking' : ''}${paused ? ' is-paused' : ''}`} onClick={voiceError ? undefined : onScreenTap}
+    <div ref={rootRef} className={`scr vc${ready ? ' vc-ready' : ''}${thinking ? ' is-thinking' : ''}${paused ? ' is-paused' : ''}${voiceError ? ' is-error' : ''}${!ready && !grey && !voiceError && !thinking ? ' is-listening' : ''}`} onClick={voiceError ? undefined : onScreenTap}
       style={{ cursor: phase === 'idle' && !voiceError ? 'pointer' : undefined }}>
       <div className={`vc-glow vc-glow-bottom${mounted && ready ? ' on' : ''}`}><img src="/assets/c/v-glow-bottom-landing.svg" alt="" /></div>
       <PaperLayer />
       <div className={`vc-glow vc-glow-top${mounted && ready ? ' on' : ''}`}><img src="/assets/c/v-glow-top-landing.svg" alt="" /></div>
-      <div className={`vc-glow vc-glow-top speak${mounted && (speaking || phase === 'thinking') ? ' on' : ''}`}><img src="/assets/c/v-glow-top-speak.svg" alt="" /></div>
-      <div className={`vc-glow vc-glow-bottom listen${mounted && !ready && !grey && phase !== 'thinking' ? ' on' : ''}`}><img src="/assets/c/v-glow-bottom-listen.svg" alt="" /></div>
+      <div className={`vc-glow vc-glow-top speak${mounted && (speaking || thinking || voiceError) ? ' on' : ''}`}><img src="/assets/c/v-glow-top-speak.svg" alt="" /></div>
+      <div className={`vc-glow vc-glow-bottom listen${mounted && !ready && !grey && !voiceError && !thinking ? ' on' : ''}`}><img src="/assets/c/v-glow-bottom-listen.svg" alt="" /></div>
 
       <div className="vc-pglow blue"><i /></div>
       <div className="vc-pglow yellow"><i /></div>
@@ -147,8 +167,8 @@ export function VoiceC({ v }: { v: VoiceModel }) {
       <StatusBar />
       <div className="vc-main">
         <div className="vc-head">
-          <button className="v-x" onClick={(e) => { e.stopPropagation(); leave('chat', 'close'); }} aria-label="End session">
-            <img src="/assets/c/close.svg" width={20} height={20} alt="" />
+          <button className="v-x" onClick={(e) => { e.stopPropagation(); leave('chat', 'close'); }} aria-label="Back to chat">
+            <img src="/assets/c/fig-back.svg" width={24} height={24} alt="" />
           </button>
           <div className="vc-actions">
             {showGear && (
@@ -159,7 +179,7 @@ export function VoiceC({ v }: { v: VoiceModel }) {
             {showMenu && (
               <div className="progress-wrap">
                 <button className="vc-icon" onClick={(e) => { e.stopPropagation(); setTip(true); }} aria-label="Menu">
-                  <img src="/assets/c/fig-hamburger.svg" width={24} height={24} alt="" />
+                  <img src="/assets/c/fig-list-42.svg" width={42} height={42} alt="" />
                 </button>
                 {tip && <div className="tooltip vc-tip" role="status">Work in progress</div>}
               </div>
@@ -188,19 +208,25 @@ export function VoiceC({ v }: { v: VoiceModel }) {
             <FadeScrollbar scroller={scroller} />
             {voiceError ? (
               <div className="vc-orb-block vc-err-block">
-                <button className="vc-err" onClick={(e) => { e.stopPropagation(); retryError(); }} aria-label={ERROR_COPY[voiceError]}>
+                <button className="vc-err" onClick={(e) => { e.stopPropagation(); if (voiceError === 'nomic') leave('chat', 'type'); else retryError(); }} aria-label={ERROR_COPY[voiceError]}>
                   {ERROR_COPY[voiceError]}
                 </button>
               </div>
+            ) : showExplainer ? (
+              <div className="vc-orb-block vc-explain">
+                <p>Wysa needs your mic to hear you. Nothing is stored without asking.</p>
+                <button onClick={(e) => { e.stopPropagation(); if (pvExplainer) return; v.confirmExplainer(); }}>Allow microphone</button>
+              </div>
             ) : (
-            <div className={`vc-orb-block${!ready && !speaking && phase !== 'thinking' ? ' listen' : ''}`}>
-              <div className={`vc-orb${paused ? ' hidden' : ''}${phase === 'thinking' ? ' pulse' : ''}`}>
-                <div className="vc-orb-in">{phase === 'thinking'
+            <div className={`vc-orb-block${!ready && !speaking && !thinking ? ' listen' : ''}`}>
+              <div className={`vc-orb${paused ? ' hidden' : ''}${thinking ? ' pulse' : ''}`}>
+                <div className="vc-orb-in">{thinking
                   ? <img className="vc-orb-think" src="/assets/c/v-orb-think.svg" alt="" />
                   : <DuoOrb tone={ready ? 'cycle' : speaking ? 'speak' : 'listen'} />}</div>
               </div>
-              <p className={`vc-label${caption?.err ? ' err' : ''}`} role="status" aria-live="polite">
-                <>{caption?.spin && <img className="spin" src="/assets/spinner.svg" alt="" />}{label}</>
+              <p className={`vc-label${cap?.err ? ' err' : ''}`} role="status" aria-live="polite">
+                <>{cap?.spin && <img className="spin" src="/assets/spinner.svg" alt="" />}{label}</>
+                {showHeld && <span className="vc-sub">Reply ready when you resume</span>}
               </p>
             </div>
             )}
@@ -208,13 +234,18 @@ export function VoiceC({ v }: { v: VoiceModel }) {
       </div>
 
       <div className="vc-ctrls" onClick={(e) => e.stopPropagation()}>
-        <JumpToLatest scroller={scroller} landing={landing} className="vc-jump" />
+        <JumpToLatest scroller={scroller} landing={landing} className="vc-jump" newKey={[...messages].reverse().find((m) => m.role === 'assistant')?.id} />
         <button className={`vc-pill${grey ? ' grey' : ''}`} onClick={() => leave('chat', 'type')}>
-          <img src="/assets/c/keyboard.svg" width={24} height={24} alt="" />Type
+          {/* Figma: Landing uses Keyboard 05eb9; Speaking/Listening/Paused use e6247. */}
+          <img src={ready ? '/assets/c/keyboard-landing.svg' : '/assets/c/keyboard.svg'} width={24} height={24} alt="" />Type
         </button>
         <button className={`vc-pill${grey ? ' grey' : ''}${paused ? ' active' : ''}`} onClick={toggleMute}
           aria-pressed={paused} aria-label={paused ? 'Resume' : 'Pause'}>
-          <img src={paused ? '/assets/c/pause-active.svg' : '/assets/c/pause.svg'} width={24} height={24} alt="" />Pause
+          {/* Figma 9cc35: 20px square-outline pause icon in a 24px slot (#DE761E when paused). */}
+          {/* Figma Voice/Paused: Play icon + "Resume" in #DE761E; otherwise the square-outline pause icon. */}
+          {paused
+            ? <><img src="/assets/c/v-play-active.svg" width={24} height={24} alt="" />Resume</>
+            : <><img src="/assets/c/v-pause.svg" width={20} height={20} style={{ margin: 2 }} alt="" />Pause</>}
         </button>
       </div>
     </div>

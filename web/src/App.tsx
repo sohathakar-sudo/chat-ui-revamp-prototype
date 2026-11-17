@@ -5,7 +5,6 @@ import { Home } from './screens/Home';
 import { Chat } from './screens/Chat';
 import { Voice } from './screens/Voice';
 import { ChooseVoice } from './screens/ChooseVoice';
-import { ChooseVariant } from './screens/ChooseVariant';
 import { PaperToggle } from './components/PaperLayer';
 import { SWOOSH_MS, transClass } from './lib/transitions';
 
@@ -40,7 +39,6 @@ export function App() {
       <div className="device">
         <div className="screen">
           <div className={`scr-wrap ${transClass(trans)}`}>
-            {screen === 'pick' && <ChooseVariant />}
             {screen === 'loader' && <Loader />}
             {screen === 'home' && <Home />}
             {screen === 'chat' && <Chat />}

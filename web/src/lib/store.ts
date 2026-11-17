@@ -3,7 +3,8 @@ import { config, prototype, type VoiceName } from '../../../shared/config';
 import type { Trans } from './transitions';
 
 export type Screen = 'pick' | 'loader' | 'chat' | 'home' | 'voice' | 'voices';
-export type Variant = (typeof prototype.variants)[number]['id'];
+// A and B code is kept but unreachable: only Variant C is listed in shared/config.ts.
+export type Variant = 'A' | 'B' | 'C';
 
 export type Message = {
   id: string;
@@ -47,15 +48,13 @@ const linkVariant = typeof location !== 'undefined'
 const linkVariantValid = prototype.variants.some((v) => v.id === linkVariant);
 const initialVariant: Variant = linkVariantValid ? (linkVariant as Variant) : prototype.defaultVariant;
 
-// Entry point: dev ?screen=/?state= shortcuts and a ?variant= link skip the chooser;
-// otherwise the app opens on "Choose a Variant".
+// Entry point: dev ?screen=/?state= shortcuts skip the loader; otherwise the app opens on the loader
+// (the "Choose a Variant" picker was removed; Variant C is the only variant).
 const startScreen: Screen = devScreen
   ? devScreen
   : import.meta.env.DEV && typeof location !== 'undefined' && location.search.includes('state=')
     ? 'voice'
-    : linkVariantValid
-      ? 'loader'
-      : 'pick';
+    : 'loader';
 
 let state: State = {
   screen: startScreen,

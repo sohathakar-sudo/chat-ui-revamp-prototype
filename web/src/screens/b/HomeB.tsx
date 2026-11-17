@@ -1,22 +1,25 @@
 // Variant B Home (Figma 531:9413).
 import { config } from '../../../../shared/config';
-import { store } from '../../lib/store';
+import { store, useStore } from '../../lib/store';
 import { HomeStatusBar } from '../../components/StatusBar';
 import { DuoOrb } from '../../components/DuoOrb';
 import { PaperLayer } from '../../components/PaperLayer';
 import type { HomeProps } from '../a/HomeA';
 
 export function HomeB({ startVoice, tip }: HomeProps) {
+  // Variant C (Figma 778:7792) shares this Home; its differences are scoped with the `c` class.
+  const isC = useStore((s) => s.variant) === 'C';
+  const c = isC ? ' c' : '';
   return (
     <>
       <PaperLayer />
       <div className="hb-hero">
         <img className="hb-hero-glow" src="/assets/b/home-hero-glow.svg" alt="" />
-        <div className="hb-top">
+        <div className={`hb-top${c}`}>
           <HomeStatusBar />
           <div className="hb-head">
             <span className="crisis">Crisis Help</span>
-            <img src="/assets/b/icon-more.svg" width={24} height={24} alt="" />
+            <img src={isC ? '/assets/c/fig-icon-more.svg' : '/assets/b/icon-more.svg'} width={24} height={24} alt="" />
           </div>
         </div>
         <div className="hb-body">
@@ -39,7 +42,7 @@ export function HomeB({ startVoice, tip }: HomeProps) {
         </div>
       </div>
 
-      <div className="today hb-today" aria-hidden>
+      <div className={`today hb-today${c}`} aria-hidden>
         <h2>For your day</h2>
         <div className="list">
           <img className="connector" src="/assets/connector.svg" alt="" />
@@ -61,11 +64,11 @@ export function HomeB({ startVoice, tip }: HomeProps) {
         </div>
       </div>
 
-      <nav className="bottom-nav" aria-hidden>
-        <div className="tab on"><img src="/assets/c/fig-nav-home-heart.svg" alt="" />Home</div>
-        <div className="tab"><img src="/assets/nav-therapist.svg" alt="" />Therapist</div>
+      <nav className={`bottom-nav${c}`} aria-hidden>
+        <div className="tab on"><img src={isC ? '/assets/c/fig-nav-home.svg' : '/assets/c/fig-nav-home-heart.svg'} alt="" />Home</div>
+        <div className="tab"><img src={isC ? '/assets/c/fig-nav-therapist.svg' : '/assets/nav-therapist.svg'} alt="" />Therapist</div>
         <div className="tab"><span className="blocks"><span className="grid"><i /><i /><i /><i /></span></span>Self-Care</div>
-        <div className="tab"><img src="/assets/nav-progress.svg" alt="" />Progress</div>
+        <div className="tab"><img src={isC ? '/assets/c/fig-nav-progress.svg' : '/assets/nav-progress.svg'} alt="" />Progress</div>
       </nav>
     </>
   );

@@ -34,27 +34,33 @@ export function PaperToggle() {
 
 const EKEY = 'wysa.errors';
 const subs = new Set<() => void>();
-function readErr(): boolean {
-  try { return localStorage.getItem(EKEY) === '1'; } catch { return false; }
+/** Error preview (desktop toggle): steps through every error screen in Figma "Error & missing states". */
+export type ErrPreview = 'reply' | 'mic' | 'silence' | 'network' | 'offline' | 'reconnecting'
+  | 'typing' | 'slow' | 'cutoff' | 'backonline' | 'explainer' | 'blocked' | 'nomic' | 'held';
+const ORDER: (ErrPreview | null)[] = [null, 'reply', 'mic', 'silence', 'network', 'offline', 'reconnecting', 'typing', 'slow', 'cutoff', 'backonline', 'explainer', 'blocked', 'nomic', 'held'];
+const LABEL: Record<ErrPreview, string> = { reply: 'Reply failed', mic: 'Mic denied', silence: 'Nothing heard', network: 'Connection lost', offline: 'Offline', reconnecting: 'Reconnecting',
+  typing: 'Wysa typing', slow: 'Slow reply', cutoff: 'Reply cut off', backonline: 'Back online', explainer: 'Mic explainer', blocked: 'Mic blocked', nomic: 'No mic', held: 'Paused, reply held' };
+function readErr(): ErrPreview | null {
+  try { const v = localStorage.getItem(EKEY); return (ORDER as (string | null)[]).includes(v) && v ? (v as ErrPreview) : null; } catch { return null; }
 }
 let errOn = readErr();
-if (typeof document !== 'undefined') document.documentElement.dataset.errors = errOn ? 'on' : 'off';
-function setErr(on: boolean) {
-  errOn = on;
-  document.documentElement.dataset.errors = on ? 'on' : 'off';
-  try { localStorage.setItem(EKEY, on ? '1' : '0'); } catch { /* noop */ }
+if (typeof document !== 'undefined') document.documentElement.dataset.errors = errOn ?? 'off';
+function setErr(v: ErrPreview | null) {
+  errOn = v;
+  document.documentElement.dataset.errors = v ?? 'off';
+  try { localStorage.setItem(EKEY, v ?? ''); } catch { /* noop */ }
   subs.forEach((f) => f());
 }
-export function useErrorPreview(): boolean {
+export function useErrorPreview(): ErrPreview | null {
   return useSyncExternalStore((f) => { subs.add(f); return () => { subs.delete(f); }; }, () => errOn);
 }
 
-/** Desktop-only floating toggle (below the paper toggle) to preview error states. */
+/** Desktop-only floating toggle (below the paper toggle): each click shows the next error state. */
 export function ErrorToggle() {
   const on = useErrorPreview();
   return (
-    <button className="err-toggle" aria-pressed={on} onClick={() => setErr(!on)}>
-      Errors: {on ? 'On' : 'Off'}
+    <button className="err-toggle" aria-pressed={!!on} onClick={() => setErr(ORDER[(ORDER.indexOf(on) + 1) % ORDER.length])}>
+      Errors: {on ? LABEL[on] : 'Off'}
     </button>
   );
 }

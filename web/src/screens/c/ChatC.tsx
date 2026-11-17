@@ -3,6 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import type { Message } from '../../lib/store';
 import type { ChatModel } from '../../lib/useChat';
+import { markMicExplained, micExplained } from '../../lib/useVoice';
 import { useTypeIn } from '../../lib/useTypeIn';
 import { StatusBar } from '../../components/StatusBar';
 import { Recorder } from '../../components/Recorder';
@@ -41,8 +42,17 @@ export function FadeScrollbar({ scroller }: { scroller: RefObject<HTMLElement | 
 
 // "Jump to latest": shown once the user scrolls up more than one visible height from the landing spot.
 // It has no Figma frame (built from the fig-plus circle style): needs design review.
-export function JumpToLatest({ scroller, landing, className }: { scroller: RefObject<HTMLElement | null>; landing: () => number; className: string }) {
+export function JumpToLatest({ scroller, landing, className, newKey }: { scroller: RefObject<HTMLElement | null>; landing: () => number; className: string; newKey?: string }) {
   const [show, setShow] = useState(false);
+  // Chat/NewReplyBelow: a new assistant message while the button is showing turns it into a "New message" pill.
+  const [fresh, setFresh] = useState(false);
+  const seenKey = useRef(newKey);
+  useEffect(() => {
+    if (newKey === seenKey.current) return;
+    seenKey.current = newKey;
+    if (show && newKey) setFresh(true);
+  }, [newKey, show]);
+  useEffect(() => { if (!show) setFresh(false); }, [show]);
   const lf = useRef(landing);
   lf.current = landing;
   useEffect(() => {
@@ -55,6 +65,14 @@ export function JumpToLatest({ scroller, landing, className }: { scroller: RefOb
     check();
     return () => { el.removeEventListener('scroll', check); ro.disconnect(); };
   }, [scroller]);
+  if (fresh) {
+    return (
+      <button className={`jump-latest jump-new ${className}${show ? ' on' : ''}`} tabIndex={show ? 0 : -1}
+        onClick={(e) => { e.stopPropagation(); scroller.current?.scrollTo({ top: lf.current(), behavior: 'smooth' }); }}>
+        New message ↓
+      </button>
+    );
+  }
   return (
     <button className={`jump-latest ${className}${show ? ' on' : ''}`} aria-label="Jump to latest message" tabIndex={show ? 0 : -1}
       onClick={(e) => { e.stopPropagation(); scroller.current?.scrollTo({ top: lf.current(), behavior: 'smooth' }); }}>
@@ -71,9 +89,47 @@ export function ChatC({ c }: { c: ChatModel }) {
   c.messages.forEach((m, i) => { if (m.role === 'assistant' && m.status === 'done') lastWysa = i; });
   const last = c.messages[c.messages.length - 1];
   const replyFailed = !!last && last.role === 'assistant' && last.status === 'error';
-  // Error copy is placeholder copy: flagged for design review.
+  // Error copy: Figma "Error & missing states" (Chat/Error/ReplyFailed, MicDenied, NothingHeard, Chat/Offline).
   const errPreview = useErrorPreview();
-  const errorText = c.notice ?? (errPreview ? "Couldn't send. Check your connection and try again." : null) ?? (replyFailed ? "Couldn't send. Check your connection and try again." : null);
+  const PREVIEW_COPY: Record<string, string> = {
+    reply: "Couldn't send. Check your connection and try again.",
+    network: "Couldn't send. Check your connection and try again.",
+    mic: "I can't hear you. Allow mic access, then tap here to try again.",
+    silence: "Couldn't catch that, try again.",
+    blocked: 'Mic access is off. Open Settings to turn it on.',
+    nomic: 'No microphone found. You can still type.',
+  };
+  const previewText = errPreview ? PREVIEW_COPY[errPreview] ?? null : null;
+  const offline = !c.online || errPreview === 'offline';
+  // Chat/BackOnline: after reconnecting, the banner turns teal and reads "You're back online" for 3s.
+  const [backOnline, setBackOnline] = useState(false);
+  const wasOnline = useRef(c.online);
+  useEffect(() => {
+    if (!wasOnline.current && c.online) {
+      setBackOnline(true);
+      const t = setTimeout(() => setBackOnline(false), 3000);
+      wasOnline.current = c.online;
+      return () => clearTimeout(t);
+    }
+    wasOnline.current = c.online;
+  }, [c.online]);
+  const showBack = !offline && (backOnline || errPreview === 'backonline');
+  // Mic explainer (first time ever the chat mic is tapped): shown above the composer like the error notice.
+  const [explain, setExplain] = useState(false);
+  const showExplainer = explain || errPreview === 'explainer';
+  const tapMic = () => { if (micExplained()) c.openRecorder('mic'); else setExplain(true); };
+  const allowMic = () => {
+    if (errPreview !== 'explainer') markMicExplained();
+    setExplain(false);
+    c.openRecorder('mic');
+  };
+  // Preview rows (desktop toggle): typing, slow reply, cut-off reply.
+  const lastAssistantId = [...c.messages].reverse().find((m) => m.role === 'assistant')?.id;
+  const errorText = c.notice ?? previewText ?? (replyFailed && !last?.text ? "Couldn't send. Check your connection and try again." : null);
+  // The composer only slides in again when it comes back after dictation (audit T1: no replay after screen changes).
+  const [returned, setReturned] = useState(false);
+  const wasRec = useRef(c.recording);
+  useEffect(() => { if (wasRec.current && !c.recording) setReturned(true); wasRec.current = c.recording; }, [c.recording]);
   const [plusTip, setPlusTip] = useState(false);
   useEffect(() => {
     if (!plusTip) return;
@@ -123,7 +179,7 @@ export function ChatC({ c }: { c: ChatModel }) {
     return () => ro.disconnect();
   }, [c.messages, userCount, c.threadRef]);
   return (
-    <div className={`scr chat chat-c${typing ? ' is-typing' : ''}${multi ? ' is-multi' : ''}`}>
+    <div className={`scr chat chat-c${typing ? ' is-typing' : ''}${multi ? ' is-multi' : ''}${c.recording ? ' is-recording' : ''}`}>
       <PaperLayer />
       <img className="cc-glow-big" src="/assets/c/glow-big.svg" alt="" />
       <img className="cc-glow-small" src={typing ? '/assets/c/glow-small-typing.svg' : '/assets/c/glow-small.svg'} alt="" />
@@ -134,12 +190,13 @@ export function ChatC({ c }: { c: ChatModel }) {
         </button>
         <div className="progress-wrap">
           <button className="icon24" onClick={c.toggleHeaderTip} aria-label="Menu">
-            <img src="/assets/c/fig-hamburger.svg" width={24} height={24} alt="" />
+            <img src="/assets/c/fig-list.svg" width={24} height={24} alt="" />
           </button>
           {c.headerTip && <div className="tooltip cc-tip" role="status">Work in progress</div>}
         </div>
       </div>
-      {!c.online && <div className="offline" role="status">You're offline</div>}
+      {offline && <div className="offline" role="status">You're offline, please check your internet connection</div>}
+      {showBack && <div className="offline back-online" role="status">You're back online</div>}
 
       <div className="thread cc-thread" data-manual-scroll="1" ref={c.threadRef}>
         {c.messages.map((m, i) => (
@@ -152,15 +209,28 @@ export function ChatC({ c }: { c: ChatModel }) {
             typed={m.id === typeIn.typingId ? m.text.slice(0, typeIn.shown) : undefined}
           />
         ))}
+        {(errPreview === 'typing' || errPreview === 'slow') && !c.messages.some((m) => m.status === 'pending') && <TypingC forceSlow={errPreview === 'slow'} />}
+        {errPreview === 'cutoff' && (
+          <div className="msg wysa cc-wysa">
+            <p className="text">It takes time. Guided meditations for acceptance in your toolkit will help. Once you accept it, you can move on and</p>
+            <button className="cc-cutoff" onClick={() => {}}>Reply interrupted. Tap to retry.</button>
+          </div>
+        )}
         <div ref={spacerRef} aria-hidden="true" />
       </div>
       <FadeScrollbar scroller={c.threadRef} />
 
-      {errorText && (
+      {showExplainer && !c.recording && (
+        <div className="cc-explainer" role="dialog" aria-label="Microphone access">
+          <p>Wysa needs your mic to hear you. Nothing is stored without asking.</p>
+          <button onClick={allowMic}>Allow microphone</button>
+        </div>
+      )}
+      {errorText && !showExplainer && (
         <div className="cc-error" role="alert">
           {/* No separate Retry link (not in Figma 778:8021 / 778:7986): the error text itself is the retry target, as in voice mode. */}
           <button
-            onClick={() => (c.notice ? c.openRecorder('mic') : c.retry(last.id))}
+            onClick={() => (c.notice ? c.openRecorder('mic') : last && c.retry(last.id))}
             aria-label={`${errorText} Tap to try again.`}
           >{errorText}</button>
         </div>
@@ -169,8 +239,8 @@ export function ChatC({ c }: { c: ChatModel }) {
       {c.recording ? (
         <Recorder accent="orange" skin="c" onDenied={c.recorderDenied} onDone={c.recorderDone} />
       ) : (
-        <div className="cc-comp">
-          <JumpToLatest scroller={c.threadRef} landing={landing} className="cc-jump" />
+        <div className={`cc-comp${returned ? ' cc-return' : ''}`}>
+          <JumpToLatest scroller={c.threadRef} landing={landing} className="cc-jump" newKey={lastAssistantId} />
           <div className="cc-card">
             <textarea
               ref={c.inputRef}
@@ -193,7 +263,7 @@ export function ChatC({ c }: { c: ChatModel }) {
               <button className="cc-talk" onClick={c.openVoiceMode} disabled={!c.online} aria-label="Speak with Wysa">
                 <img src="/assets/c/fig-waveform.svg" width={24} height={24} alt="" />Speak
               </button>
-              <button className="cc-mic" onClick={() => c.openRecorder('mic')} disabled={!c.online} aria-label="Dictate">
+              <button className="cc-mic" onClick={tapMic} disabled={!c.online} aria-label="Dictate">
                 <img src="/assets/c/fig-microphone.svg" width={24} height={24} alt="" />
               </button>
               {c.voiceTip && <span className="tooltip" role="status">Voice isn't supported in this browser.</span>}
@@ -212,20 +282,41 @@ function MessageRowC({ m, c, showRead, typing, typed }: { m: Message; c: ChatMod
     return <div className="msg user"><div className="cc-bubble">{m.text}</div></div>;
   }
   if (m.status === 'pending') {
-    return <div className="msg wysa" aria-label="Wysa is typing"><div className="typing b"><i /><i /><i /></div></div>;
+    return m.text ? null : <TypingC />;
   }
   if (m.status === 'error') {
-    return null; // the failure is shown in the error strip above the input (Figma 778:7986)
+    // Chat/Messages/ReplyCutOff: partial text stays, with a tap-to-retry line. No text: the error strip above the input (Figma 778:7986).
+    if (!m.text) return null;
+    return (
+      <div className="msg wysa cc-wysa">
+        <p className="text">{m.text}</p>
+        <button className="cc-cutoff" onClick={() => c.retry(m.id)}>Reply interrupted. Tap to retry.</button>
+      </div>
+    );
   }
   return (
     <div className="msg wysa cc-wysa">
       <p className="text">{typed ?? m.text}{typed !== undefined && <span className="type-caret" />}</p>
       {showRead && m.status === 'done' && typed === undefined && (
         <button className={`cc-read${playing ? ' playing' : ''}`} onClick={() => c.togglePlayback(m.id)} aria-pressed={playing} aria-label={playing ? 'Stop reading aloud' : 'Read aloud'}>
-          <img src={typing ? '/assets/c/fig-speaker-high-dim.svg' : '/assets/c/fig-speaker-high.svg'} width={20} height={18} alt="" />
-          Read aloud
+          {playing
+            ? <span className="cc-read-ico" aria-hidden="true" />
+            : <img src={typing ? '/assets/c/fig-speaker-high-dim.svg' : '/assets/c/fig-speaker-high.svg'} width={20} height={18} alt="" />}
+          {playing ? 'Stop reading' : 'Read aloud'}
         </button>
       )}
+    </div>
+  );
+}
+
+// Chat/Messages/WysaTyping + Chat/SlowReply: 3 dots; after 8s without text, a "Taking longer than usual…" line.
+function TypingC({ forceSlow }: { forceSlow?: boolean }) {
+  const [slow, setSlow] = useState(false);
+  useEffect(() => { const t = setTimeout(() => setSlow(true), 8000); return () => clearTimeout(t); }, []);
+  return (
+    <div className="msg wysa cc-typing" aria-label="Wysa is typing">
+      <div className="typing-c"><i /><i /><i /></div>
+      {(slow || forceSlow) && <p className="cc-slow" role="status">Taking longer than usual…</p>}
     </div>
   );
 }

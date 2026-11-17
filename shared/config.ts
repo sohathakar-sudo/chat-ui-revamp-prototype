@@ -104,10 +104,8 @@ export const config = {
  * renders whatever is listed, so no new UI work is needed.
  */
 export const prototype = {
-  defaultVariant: 'A' as 'A' | 'B' | 'C',
+  defaultVariant: 'C' as 'A' | 'B' | 'C',
   variants: [
-    { id: 'A' as const, label: 'Variant A', tagline: 'Calm blue', description: 'Iteration 1: white and teal, glowing orb' },
-    { id: 'B' as const, label: 'Variant B', tagline: 'Neutral, Contemplative', description: 'Iteration 2: pastel gradients, orange accent' },
     { id: 'C' as const, label: 'Variant C', tagline: 'Warm, Talk or Type', description: 'Iteration 3: orange Talk and Mic, scrolling voice transcript' },
   ],
   controls: [

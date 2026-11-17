@@ -46,7 +46,7 @@ const T: Partial<Record<Variant, Partial<Record<TransKind, Timeline>>>> = {
     'home-chat': { press: 0, exit: 450, enter: 900, swoosh: 'ltr' },
     'home-voice': { press: 0, exit: 550, enter: 1500, swoosh: 'ltr' },
     // Talk: same cyan/peach swoosh as Variant B. Flag: no Figma frame. (No home-voice: Speak stays as is.)
-    'chat-voice': { press: 0, exit: 300, enter: 700, swoosh: 'ltr' },
+    'chat-voice': { press: 0, exit: 300, enter: 1200, swoosh: 'ltr' }, // label blur-in ends at 1150ms (audit T2)
     'voice-chat': { press: 700, exit: 450, enter: 600, swoosh: 'ltr' },
     // Same timings as Variant A's chat-home: content drops/fades, the screen settles into the Home hero, Home content comes in.
     'chat-home': { press: 0, exit: 650, enter: 1000 },

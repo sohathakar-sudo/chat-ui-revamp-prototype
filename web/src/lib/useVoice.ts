@@ -11,7 +11,13 @@ import {
 export type Phase = 'idle' | 'listening' | 'thinking' | 'speaking' | 'paused' | 'reconnecting' | 'failed' | 'denied';
 
 /** Voice error kinds shown by Variant C (copy lives in VoiceC; flagged for design review). */
-export type VoiceError = 'mic' | 'silence' | 'network' | 'reply';
+export type VoiceError = 'mic' | 'silence' | 'network' | 'reply' | 'blocked' | 'nomic';
+
+/** Mic explainer (Variant C): shown once, before the first OS mic prompt. */
+const MIC_EXPLAINED = 'wysa.micExplained';
+export const micExplained = (): boolean => { try { return localStorage.getItem(MIC_EXPLAINED) === '1'; } catch { return true; } };
+export const markMicExplained = () => { try { localStorage.setItem(MIC_EXPLAINED, '1'); } catch { /* noop */ } };
+const isNoMic = (e: unknown) => ['NotFoundError', 'DevicesNotFoundError'].includes((e as DOMException)?.name);
 /** How long Reconnecting lasts (offline / recognition network error) before it becomes a Connection lost error. */
 const RECONNECT_FAIL_MS = 8000;
 
@@ -59,6 +65,17 @@ export function useVoice(variant: Variant) {
   // Any phase change clears the error; failure paths set it right after entering their phase.
   const setPhase = (p: Phase) => { phaseRef.current = p; setPhaseState(p); setVoiceError(null); };
   const fail = (p: Phase, kind: VoiceError) => { setPhase(p); setVoiceError(kind); };
+  /** Mic failure: denied (upgraded to 'blocked' when the browser says it is blocked persistently), no device, or other. */
+  const failMic = (denied: boolean, noMic = false) => {
+    if (noMic) { fail('failed', 'nomic'); return; }
+    fail(denied ? 'denied' : 'failed', 'mic');
+    if (!denied) return;
+    try {
+      navigator.permissions?.query({ name: 'microphone' as PermissionName }).then((st) => {
+        if (st.state === 'denied' && phaseRef.current === 'denied') setVoiceError('blocked');
+      }).catch(() => {});
+    } catch { /* noop */ }
+  };
 
   const mic = useRef<Mic | null>(null);
   const rec = useRef<Recognizer | null>(null);
@@ -74,6 +91,10 @@ export function useVoice(variant: Variant) {
   const reconnectFor = useRef<'reply' | 'offline'>('reply');
   /** Mute during Thinking holds the reply; it plays on resume. */
   const heldReply = useRef(false);
+  /** Mirror of heldReply for the UI (Paused: "Reply ready when you resume"). */
+  const [held, setHeld] = useState(false);
+  const setHeldBoth = (v: boolean) => { heldReply.current = v; setHeld(v); };
+  const [explainer, setExplainer] = useState(false);
   const turnId = useRef(0);
   // A farewell was spoken: after Wysa's closing line, return Home instead of listening again.
   const endingAfterReply = useRef(false);
@@ -123,6 +144,8 @@ export function useVoice(variant: Variant) {
   // ---------- listening ----------
   const startListening = useCallback(async () => {
     stopListening();
+    // Variant C: the first time ever, explain the mic before the OS prompt (tap "Allow microphone" to continue).
+    if (variantRef.current === 'C' && !micExplained()) { setExplainer(true); return; }
     bumpInactivity();
     if (!navigator.onLine) { reconnectFor.current = 'offline'; setPhase('reconnecting'); return; }
     const myTurn = turnId.current;
@@ -153,7 +176,7 @@ export function useVoice(variant: Variant) {
         m = await openMic();
       } catch (e) {
         if (myTurn !== turnId.current) return;
-        fail(e instanceof MicDeniedError ? 'denied' : 'failed', 'mic');
+        failMic(e instanceof MicDeniedError, isNoMic(e));
         return;
       }
       if (myTurn !== turnId.current) { m.close(); return; }
@@ -185,7 +208,7 @@ export function useVoice(variant: Variant) {
           if (myTurn !== turnId.current) return;
           stopListening();
           if (code === 'network') { reconnectFor.current = 'offline'; setPhase('reconnecting'); }
-          else fail(code === 'denied' ? 'denied' : 'failed', 'mic');
+          else failMic(code === 'denied', code === 'audio-capture');
         },
       });
       try { r.start(); } catch { /* already running */ }
@@ -262,7 +285,7 @@ export function useVoice(variant: Variant) {
   // ---------- replying & speaking ----------
   const finishReply = useCallback(() => {
     reply.current = freshReply();
-    heldReply.current = false;
+    setHeldBoth(false);
     if (endingAfterReply.current) { endingAfterReply.current = false; leaveRef.current('home'); return; }
     startListening();
   }, [startListening]);
@@ -337,7 +360,7 @@ export function useVoice(variant: Variant) {
     bumpInactivity();
     const r = freshReply();
     reply.current = r;
-    heldReply.current = false;
+    setHeldBoth(false);
     setReplyText('');
     setSpokenWords(0);
     if (phaseRef.current !== 'paused') setPhase('thinking');
@@ -361,7 +384,7 @@ export function useVoice(variant: Variant) {
         if (r.handle) removeMessage(r.handle.messageId);
         reply.current = freshReply();
         const p = phaseRef.current;
-        if (p === 'idle' || p === 'paused') { heldReply.current = p === 'paused'; return; }
+        if (p === 'idle' || p === 'paused') { setHeldBoth(p === 'paused'); return; }
         attempts.current++;
         if (!navigator.onLine) { reconnectFor.current = 'reply'; setPhase('reconnecting'); return; }
         if (attempts.current <= config.voice.maxRetries) {
@@ -383,7 +406,7 @@ export function useVoice(variant: Variant) {
     const p = phaseRef.current;
     if (p === 'paused') {
       if (heldReply.current) {
-        heldReply.current = false;
+        setHeldBoth(false);
         const r = reply.current;
         if (r.handle) {
           // Reply still on its way or already in: play it, then back to Listening.
@@ -406,7 +429,7 @@ export function useVoice(variant: Variant) {
       setPhase('paused');
       return;
     }
-    heldReply.current = p === 'thinking' || (p === 'reconnecting' && reconnectFor.current === 'reply');
+    setHeldBoth(p === 'thinking' || (p === 'reconnecting' && reconnectFor.current === 'reply'));
     if (p === 'speaking') {
       // Speech stops; the full reply is already in the thread.
       stopSpeech();
@@ -416,6 +439,14 @@ export function useVoice(variant: Variant) {
     clearTimer('retry');
     clearTimer('resume');
     setPhase('paused');
+  };
+
+  /** Explainer "Allow microphone": remember it, then start listening (this tap triggers the OS prompt). */
+  const confirmExplainer = () => {
+    markMicExplained();
+    setExplainer(false);
+    unlockAudio();
+    startListening();
   };
 
   /** Variant A Mute: silence Wysa's voice only; the session keeps running. */
@@ -575,7 +606,7 @@ export function useVoice(variant: Variant) {
 
   return {
     phase, idleReason, resuming, caption, transcript, replyText, spokenWords, barEls, micLevel,
-    voiceError, retryError, onScreenTap, toggleMute, muted, toggleMuted, leave,
+    voiceError, retryError, held, explainer, confirmExplainer, onScreenTap, toggleMute, muted, toggleMuted, leave,
   };
 }
 

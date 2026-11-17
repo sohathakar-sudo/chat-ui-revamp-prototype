@@ -403,6 +403,10 @@ p { margin: 0; }
 }
 .hb-hero-glow { position: absolute; left: 50%; top: 322px; width: 560px; height: 178px; transform: translateX(-50%); }
 .hb-top { position: relative; width: 100%; padding: 0 16px; display: flex; flex-direction: column; align-items: center; gap: 24px; }
+/* Variant C Home (Figma 778:7792): status bar spans the full frame; heading and nav colours per Figma. */
+.hb-top.c .sb-home { margin: 0 -16px; width: calc(100% + 32px); }
+.hb-today.c h2 { color: #575b7f; }
+.bottom-nav.c { background: #fbf8f3; }
 .hb-head { width: 375px; max-width: 100%; display: flex; justify-content: flex-end; align-items: center; gap: 12px; }
 .hb-body { position: relative; width: 100%; height: 418px; padding: 0 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px; }
 .hb-center { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 36px; }
@@ -1101,3 +1105,119 @@ html[data-paper="on"] .paper-layer { display: block; }
 .vc-orb-think { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .is-thinking .vc-glow-top.speak.on > img { animation: vc-think-glow-in 200ms ease-out both; }
 @keyframes vc-think-glow-in { from { transform: translateY(250px); } /* parent is rotated 180deg, so +250 local = 250px above on screen */ to { transform: none; } }
+
+/* ── Variant C · Figma "Nov 17 – Claude pass" (Iteration 4) ───────────────────────────────
+   Shadows: effect styles Shadow/Button/Neutral, Shadow/Button/Primary, Shadow/Orb.
+   Type: 18px minimum on every Chat, Voice and Home text (status bar and bottom nav excluded). */
+:root {
+  --sh-btn: 0 2px 6px rgba(10, 10, 36, 0.05), 0 0 1px rgba(10, 10, 36, 0.03);
+  --sh-btn-primary: 0 2px 6px rgba(222, 118, 30, 0.15);
+  --sh-orb: 0 8px 24px rgba(10, 10, 36, 0.10), 0 0 10px rgba(73, 153, 165, 0.22);
+}
+/* Text-area buttons */
+.cc-talk, .rec-c .rec-bin, .rec-c .rec-pause { filter: none; box-shadow: var(--sh-btn); }
+.cc-mic, .cc-send, .rec-c .rec-ok { box-shadow: var(--sh-btn-primary); }
+
+/* 18px minimum – Chat */
+.cc-wysa .text { font-size: 18px; line-height: 26px; }
+.cc-bubble { font-size: 18px; line-height: 26px; }
+.cc-read { font-size: 18px; line-height: 24px; }
+.cc-card textarea { font-size: 18px; line-height: 26px; max-height: 156px; } /* Figma 18/26, six lines before scrolling */
+.cc-talk, .rec-c .rec-pause { font-size: 18px; }
+.cc-error button, .chat-c .failed, .chat-c .failed button { font-size: 18px; }
+.chat-c .offline { margin: 4px 24px 8px; padding: 6px 12px; font-size: 18px; line-height: 24px; }
+.chat-c .tooltip, .vc .tooltip { font-size: 18px; line-height: 24px; }
+.rec-c .rec-time { font-size: 18px; line-height: 24px; min-width: 50px; font-variant-numeric: tabular-nums; } /* fixed width: waveform no longer shifts each second (audit F13b) */
+.rec-card { padding: 12px 12px 8px; } /* Figma 110px card (audit F13) */
+.is-recording .cc-read { color: #9194b9; } /* faded like typing (audit F11) */
+
+/* 18px minimum – Voice */
+.vc-line, .vc-bubble { font-size: 18px; line-height: 26px; }
+.vc-label, .vc-err { font-size: 18px; }
+.vc-pill { font-size: 18px; padding: 12px 16px 12px 12px; }
+.vc-ctrls .vc-pill:first-child, .vc-ctrls .vc-pill:last-child { width: auto; min-width: 100px; }
+.vc-pill.active { font-weight: 700; } /* Figma Paused: Resume is SF Pro Bold (audit F20) */
+
+/* 18px minimum – Home C */
+.hb-top.c .crisis, .hb-today.c .tag, .hb-today.c .desc, .hb-today.c .cta { font-size: 18px; }
+
+/* Orb shadow (Shadow/Orb): a disc ~78% of the orb sits behind it and carries the shadow */
+.vc-orb-in, .hb-orb { isolation: isolate; }
+.vc-orb-in::before, .hb-orb::before { content: ''; position: absolute; inset: 11%; border-radius: 50%; background: #fdfaf2; box-shadow: var(--sh-orb); z-index: -1; pointer-events: none; }
+.hb-orb { overflow: visible; }
+
+/* Voice layout (audit F14, F15, F21, F22) */
+.vc-main { max-height: none; }
+.vc-transcript { padding-top: 0; }
+.vc-err-block { padding-bottom: 13px; }
+.vc-orb-block.listen { height: 181px; }
+
+/* Pill glows per state (audit F16): cyan on Landing/Listening, grey on Speaking, yellow on Resume, light grey on Error */
+.vc-ready .vc-pill, .vc.is-listening .vc-pill { filter: drop-shadow(0 0 3.5px #a3ede8); }
+.vc.is-paused .vc-pill.active { filter: drop-shadow(0 0 3.5px rgba(254, 237, 159, 0.3)); }
+.vc.is-error .vc-pill { filter: drop-shadow(0 0 3.5px rgba(202, 202, 202, 0.5)); }
+
+/* Audit T1: the composer and voice controls no longer replay their slide-in after a screen transition ends. */
+.cc-comp, .vc-ctrls { animation: none; }
+.cc-comp.cc-return { animation: cc-bottom-in 220ms ease-out both; }
+
+/* Audit F17 (Voice/Errorstate): yellow top glow (same ellipse as Speaking), no cyan bottom glow — handled in VoiceC. */
+/* Audit F18 (Voice/Paused): Figma's two glow ellipses, layer blur 100.
+   Cyan #A3ECE7 @40%, 600×421 at (-76, 711); yellow #FEED9F @30%, 848×471 at (-209, -413). */
+.vc-pglow.blue { left: -76px; top: 711px; bottom: auto; right: auto; width: 600px; height: 421px; }
+.vc-pglow.yellow { left: -209px; top: -413px; bottom: auto; right: auto; width: 848px; height: 571px; }
+.vc-pglow i { filter: blur(50px); }
+.vc-pglow.blue i { background: rgba(163, 236, 231, 0.4); }
+.vc-pglow.yellow i { background: rgba(254, 237, 159, 0.3); }
+.vc.is-paused .vc-pglow i { animation: none; }
+
+/* Audit T3: Figma's entrances on every Voice state — glows slide into place (200ms ease-out); the start screen's top glow also rotates in.
+   Parents are rotated 180deg, so +Y local = upward on screen. */
+.vc-glow-top.on > img { animation: vc-think-glow-in 200ms ease-out both; }
+.vc-glow-bottom.on > img { animation: vc-glow-up-in 200ms ease-out both; }
+.vc-ready .vc-glow-top.on > img { animation: vc-glow-rot-in 600ms ease-out both; }
+@keyframes vc-glow-up-in { from { transform: translateY(-250px); } to { transform: none; } }
+@keyframes vc-glow-rot-in { from { transform: translateY(250px) rotate(-30deg); } to { transform: none; } }
+/* Audit T4: audio-reactive glows fade in instead of popping (e.g. Listening after Resume). */
+.vc-glow-top.speak.on, .vc-glow-bottom.listen.on { animation: fade-in 400ms ease; }
+
+/* Implicit states (Nov 17, Figma "Nov 17 – Claude pass") */
+/* Chat/Messages/WysaTyping + Chat/SlowReply */
+.cc-typing { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+.typing-c { display: flex; gap: 6px; height: 24px; align-items: center; }
+.typing-c i { width: 8px; height: 8px; border-radius: 50%; background: #B1B4CE; opacity: 1; animation: typing-c-pulse 1.2s ease-in-out infinite; }
+.typing-c i:nth-child(2) { opacity: .75; animation-delay: .15s; }
+.typing-c i:nth-child(3) { opacity: .5; animation-delay: .3s; }
+@keyframes typing-c-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(.75); } }
+.cc-slow { margin: 0; font: 400 18px/24px var(--c-font); color: #575B7F; }
+/* Chat/Messages/ReplyCutOff */
+.cc-cutoff { display: block; margin-top: 8px; padding: 0; text-align: left; font: 400 18px/24px var(--c-font); color: #D26969; cursor: pointer; }
+/* Chat/Messages/ReadAloudPlaying */
+.cc-read.playing { color: #DE761E; }
+.cc-read-ico { width: 20px; height: 18px; flex-shrink: 0; background: currentColor; -webkit-mask: url(/assets/c/fig-speaker-high.svg) center / contain no-repeat; mask: url(/assets/c/fig-speaker-high.svg) center / contain no-repeat; }
+/* Chat/BackOnline */
+.chat-c .offline.back-online { background: rgba(73, 153, 165, .12); color: #4999A5; }
+/* Chat/OfflineDraft + WaitingForReply: disabled Send at .4 */
+.cc-send:disabled, .is-typing .cc-send:disabled { opacity: .4; }
+/* Chat/Dictation/NearLimit */
+.rec-c .rec-time.near-limit { color: #D26969; }
+/* Chat/Dictation/DiscardConfirm */
+.dc-scrim { position: absolute; inset: 0; z-index: 40; display: flex; align-items: center; justify-content: center; background: rgba(10, 10, 36, .25); }
+.dc-card { width: 340px; padding: 24px; border-radius: 28px; background: #fff; display: flex; flex-direction: column; gap: 8px; font-family: var(--c-font); }
+.dc-card h2 { margin: 0; font: 600 20px/28px var(--c-font); color: #0A0A24; }
+.dc-card p { margin: 0; font: 400 18px/24px var(--c-font); color: #575B7F; }
+.dc-btns { display: flex; gap: 12px; margin-top: 16px; }
+.dc-btns button { flex: 1; padding: 12px 24px; border-radius: 100px; font: 400 18px/24px var(--c-font); cursor: pointer; }
+.dc-keep { background: #fff; color: #0A0A24; box-shadow: var(--sh-btn); }
+.dc-discard { background: #D26969; color: #fff; }
+/* Chat/NewReplyBelow */
+.jump-latest.jump-new { width: auto; height: auto; padding: 12px 20px; border-radius: 100px; background: #fff; box-shadow: var(--sh-btn); font: 400 18px/24px var(--c-font); color: #0A0A24; white-space: nowrap; }
+/* Voice/PausedReplyWaiting */
+.vc-label { position: relative; }
+.vc-sub { position: absolute; left: 50%; top: 30px; transform: translateX(-50%); white-space: nowrap; font: 400 18px/24px var(--c-font); color: #575B7F; text-align: center; }
+/* Mic/Explainer */
+.cc-explainer, .vc-explain { display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center; }
+.cc-explainer { position: relative; z-index: 3; flex-shrink: 0; padding: 12px 24px; }
+.vc-explain { justify-content: center; padding: 0 24px; }
+.cc-explainer p, .vc-explain p { margin: 0; max-width: 316px; font: 400 18px/24px var(--c-font); color: #575B7F; }
+.cc-explainer button, .vc-explain button { padding: 12px 24px; border-radius: 100px; background: #DE761E; color: #fff; font: 400 18px/24px var(--c-font); box-shadow: var(--sh-btn-primary); cursor: pointer; }

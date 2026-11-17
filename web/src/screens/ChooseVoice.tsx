@@ -56,8 +56,10 @@ export function ChooseVoice() {
       <StatusBar />
       <div className="voices-body">
         <div className="v-head">
-          <button className="v-x" onClick={() => close(false)} aria-label="Close">
-            <img src="/assets/close.svg" width={20} height={20} alt="" />
+          <button className="v-x" onClick={() => close(false)} aria-label={variant === 'C' ? 'Back' : 'Close'}>
+            {variant === 'C'
+              ? <img src="/assets/c/fig-back.svg" width={24} height={24} alt="" />
+              : <img src="/assets/close.svg" width={20} height={20} alt="" />}
           </button>
         </div>
         <div className="voices-main">

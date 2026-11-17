@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { config } from '../../../shared/config';
 import { store } from '../lib/store';
 import { createRecognizer, MicDeniedError, openMic, transcribeOnServer, type Mic, type Recognizer } from '../lib/speech';
 
 const BARS = 25;
+/** Figma 778:7929 waveform: bar heights (px) of the recorder in Chat/Dictation/Active, left to right. */
+const FIG_WAVE = [12, 20, 20, 20, 20, 20, 5, 5, 20, 12, 12, 5, 5, 16, 16, 20, 20, 20, 20, 20, 20, 20, 20, 20, 16, 16, 12, 12, 12, 12, 20, 20, 12, 5, 20, 12, 5, 20, 12, 5, 5];
 
 type Props = {
   /** Called with the transcript; null = discarded (cancelled). '' = nothing heard. */
@@ -18,13 +21,27 @@ type Props = {
 export function Recorder({ onDone, onDenied, accent = 'teal', skin }: Props) {
   const color = accent === 'orange' ? '#DE761E' : '#4999A5';
   const [elapsed, setElapsed] = useState(0);
-  const [levels, setLevels] = useState<number[]>(() => Array(BARS).fill(0));
+  const [levels, setLevels] = useState<number[]>(() => Array(skin === 'c' ? FIG_WAVE.length : BARS).fill(0));
   /** After the tick: transcribing (no Figma frame: spinner in place of the waveform, flagged for design review). */
   const [busy, setBusy] = useState(false);
   /** Buttons act on the live session only; a stale (StrictMode throwaway) mount can never touch it. */
   const api = useRef<{ finish(cancel: boolean): void; togglePause(): void } | null>(null);
   /** Paused: timer, waveform and capture are held until resumed (Figma 778:7906 Pause pill). */
   const [paused, setPaused] = useState(false);
+  /** Variant C: discard confirmation after >= 10s of recording (Figma Chat/Dictation/DiscardConfirm). */
+  const [confirmDiscard, setConfirmDiscard] = useState(false);
+  const pausedByDialog = useRef(false);
+  const recRoot = useRef<HTMLDivElement>(null);
+  const openDiscard = () => {
+    if (busy) return;
+    if (elapsed < 10_000) { api.current?.finish(true); return; }
+    if (!paused) { pausedByDialog.current = true; api.current?.togglePause(); }
+    setConfirmDiscard(true);
+  };
+  const keepRecording = () => {
+    setConfirmDiscard(false);
+    if (pausedByDialog.current) { pausedByDialog.current = false; api.current?.togglePause(); }
+  };
 
   useEffect(() => {
     type Session = {
@@ -184,10 +201,23 @@ export function Recorder({ onDone, onDenied, accent = 'teal', skin }: Props) {
   if (skin === 'c') {
     // Figma 778:7906: 28px card (388 × 110): time + waveform row, then bin / Pause pill / 42px tick row.
     return (
-      <div className="recorder rec-c">
+      <div className="recorder rec-c" ref={recRoot}>
+        {confirmDiscard && recRoot.current?.closest('.scr') && createPortal(
+          <div className="dc-scrim" role="presentation">
+            <div className="dc-card" role="alertdialog" aria-modal="true" aria-labelledby="dc-title" aria-describedby="dc-body">
+              <h2 id="dc-title">Discard this recording?</h2>
+              <p id="dc-body">You'll lose what you've said so far.</p>
+              <div className="dc-btns">
+                <button className="dc-keep" onClick={keepRecording}>Keep</button>
+                <button className="dc-discard" onClick={() => { setConfirmDiscard(false); api.current?.finish(true); }}>Discard</button>
+              </div>
+            </div>
+          </div>,
+          recRoot.current.closest('.scr') as Element,
+        )}
         <div className="rec-card">
           <div className="rec-top">
-            <span className="rec-time">{time}</span>
+            <span className={`rec-time${config.voiceNote.maxMs - elapsed <= 10_000 ? ' near-limit' : ''}`}>{time}</span>
             {busy ? (
               <span className="rec-busy" role="status" aria-label="Transcribing">
                 <img className="spin" src="/assets/spinner.svg" width={24} height={24} alt="" />
@@ -195,19 +225,22 @@ export function Recorder({ onDone, onDenied, accent = 'teal', skin }: Props) {
             ) : (
               <div className="rec-wave rec-wave-c" aria-hidden>
                 {levels.map((lv, i) => {
-                  const base = [5, 12, 16, 20][i % 4];
-                  const h = paused ? 5 : Math.max(5, Math.min(base, 5 + lv * 20 * base / 20));
+                  // Figma's pattern is the shape; the live level scales it (audit F12).
+                  const base = FIG_WAVE[i];
+                  const h = paused ? 5 : Math.max(5, Math.round(base * Math.min(1, 0.45 + lv)));
                   return <i key={i} style={{ height: h, background: color }} />;
                 })}
               </div>
             )}
           </div>
           <div className="rec-actions">
-            <button className="rec-bin" onClick={() => api.current?.finish(true)} aria-label="Discard recording">
+            <button className="rec-bin" onClick={openDiscard} aria-label="Discard recording">
               <img src="/assets/c/fig-trash.svg" width={20} height={20} alt="" />
             </button>
             <button className="rec-pause" onClick={() => api.current?.togglePause()} disabled={busy} aria-pressed={paused} aria-label={paused ? 'Resume recording' : 'Pause recording'}>
-              <img src="/assets/c/fig-pause-circle.svg" width={20} height={20} alt="" />{paused ? 'Resume' : 'Pause'}
+              {paused
+                ? <img src="/assets/c/fig-play.svg" width={24} height={24} style={{ margin: -2 }} alt="" />
+                : <img src="/assets/c/fig-pause-circle.svg" width={20} height={20} alt="" />}{paused ? 'Resume' : 'Pause'}
             </button>
             <button className="rec-ok" onClick={() => api.current?.finish(false)} disabled={busy} aria-label="Stop and transcribe">
               <img src="/assets/c/fig-check.svg" width={24} height={24} alt="" />
